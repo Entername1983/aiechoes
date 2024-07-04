@@ -3,3 +3,4 @@ back/app/.env
 back/app/__pycache__
 .prettierrc
 front/.env.development
+back/alembic
