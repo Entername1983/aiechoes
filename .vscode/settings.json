@@ -1,0 +1,94 @@
+{
+  "[python]": {
+    "editor.formatOnType": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+
+    "python.autoSelectInterpreter": true,
+    "python.pythonPath": "./venv/Scripts/python.exe",
+
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+
+  "python.languageServer": "Pylance",
+  // "python.analysis.extraPaths": ["./server/.venv"],
+  "python.analysis.diagnosticMode": "openFilesOnly",
+  "files.watcherExclude": {
+    "**/node_modules/*": true,
+    "**/frontend/*": true
+  },
+  "python.analysis.exclude": ["**/node_modules", "**/frontend"],
+  "editor.inlineSuggest.enabled": true,
+  "editor.minimap.enabled": false,
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": true,
+    "scminput": false
+  },
+  "github.copilot.advanced": {},
+  "stripe.cliInstallPath": "C:\\STRIPE\\stripe.exe",
+  "aws.suppressPrompts": {
+    "codeWhispererNewWelcomeMessage": true,
+    "codeWhispererConnectionExpired": true
+  },
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "python.testing.unittestEnabled": true,
+  "workbench.iconTheme": "material-icon-theme",
+  "indentRainbow.excludedLanguages": ["python", "javascript", "plaintext"],
+  "python.analysis.autoImportCompletions": true,
+  "editor.autoClosingQuotes": "never",
+  "editor.autoClosingOvertype": "never",
+  "editor.autoClosingComments": "never",
+  "editor.autoClosingBrackets": "never",
+  "liveServer.settings.donotShowInfoMsg": true,
+  "eslint.run": "onSave",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "python.analysis.typeCheckingMode": "basic",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "window.zoomLevel": -1,
+  "gitlens.views.commitDetails.files.layout": "list",
+  "python.defaultInterpreterPath": "C:\\Users\\kevin\\Documents\\AIEchoes\\back\\myenv\\Scripts\\python.exe",
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-NoExit",
+        "-Command",
+        "& 'C:\\Users\\kevin\\Documents\\AIEchoes\\back\\myenv\\Scripts\\Activate.ps1'"
+      ]
+    }
+  },
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "[yaml]": {
+    "editor.formatOnSave": false
+  },
+  "diffEditor.ignoreTrimWhitespace": false,
+  "inlineChat.mode": "preview",
+  "terminal.integrated.experimentalInlineChat": true,
+  "workbench.colorTheme": "Beautiful Dracula Normal",
+  "editor.accessibilitySupport": "off",
+  "prettier.bracketSameLine": true,
+  "prettier.jsxSingleQuote": true,
+  "github.copilot.editor.enableAutoCompletions": true,
+  "ruff.lineLength": 100
+}

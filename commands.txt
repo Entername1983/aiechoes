@@ -1,0 +1,6 @@
+-- Backend --
+- Run
+fastapi dev app/main.py
+
+
+-- Frontend --
