@@ -1,0 +1,33 @@
+# # 
+
+# Build stage for installing Python package dependencies
+FROM python:3.12 AS builder
+
+WORKDIR /code
+
+COPY ./reqs/requirements.txt /code/
+
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
+# Final stage for the runtime environment
+FROM python:3.12-slim
+
+# Install runtime dependencies
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy installed Python packages from builder stage
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin  
+RUN pip install uvicorn==0.27.1
+
+COPY ./ /code
+
+WORKDIR /code
+
+EXPOSE 8000
+
+# Install uvicorn here to ensure the executable is available
+# RUN pip install uvicorn
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "main:app", "--bind", "0.0.0.0:8000"]

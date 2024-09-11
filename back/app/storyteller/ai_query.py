@@ -1,21 +1,12 @@
-import pathlib
-import textwrap
-
 import google.generativeai as genai
 import replicate
 import replicate.client
-from anthropic import AI_PROMPT, HUMAN_PROMPT, AsyncAnthropic
+from anthropic import AsyncAnthropic
 from dependencies.settings import get_settings
-from mistralai.async_client import MistralAsyncClient
-from mistralai.models.chat_completion import ChatMessage
+from mistralai import Mistral, UserMessage
 from openai import (
-    APITimeoutError,
     AsyncOpenAI,
-    InternalServerError,
-    OpenAI,
-    RateLimitError,
 )
-from utils.log_decorators import log_deco
 
 settings = get_settings()
 
@@ -88,10 +79,10 @@ class AiQuery:
         return response.content[0].text
 
     async def query_mistral(self) -> str:
-        client = MistralAsyncClient(api_key=self.settings.mistral_api_key)
+        client = Mistral(api_key=self.settings.mistral_api_key)
         model = "mistral-large-latest"
-        messages = [ChatMessage(role="user", content=self.prompt)]
-        chat_response = await client.chat(
+        messages = [UserMessage(role="user", content=self.prompt)]
+        chat_response = await client.chat.complete_async(
             model=model,
             messages=messages,
         )

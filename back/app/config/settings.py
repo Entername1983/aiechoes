@@ -1,9 +1,7 @@
 # import json
 import os
-from typing import Literal, TypedDict
 
 from dotenv import load_dotenv
-from pydantic import BaseModel, ConfigDict
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")

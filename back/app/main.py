@@ -10,7 +10,7 @@ sentry_sdk.init(
 )
 
 
-app = create_app()
+app: FastAPI = create_app()
 
 
 @app.get("/")

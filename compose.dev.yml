@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./back
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5000:8000"
+    volumes:
+      - ./back:/code
+    environment:
+      - UVICORN_HOST=0.0.0.0
+      - UVICORN_PORT=8000
+      - UVICORN_LOG_LEVEL=debug
+      - DEBUG=1
+    command: uvicorn main:app --host 0.0.0.0 --reload
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    # depends_on:
+    #   - redis
+
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./front:/code
+      - /code/node_modules
+    network_mode: "host"
+    image: cephadex_frontend:1.0
+    restart: unless-stopped
+    environment:
+      - CHOKIDAR_USEPOLLING=true 
+
+
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: 1234
+    restart: always
+    volumes:
+      - ./postgres:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis/redis-stack-server:latest
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--requirepass", "1234", "--loadmodule /opt/redis-stack/lib/redisearch.so", "--loadmodule /opt/redis-stack/lib/rejson.so"]
+
+# docker-compose -f compose.dev.yml up -d
