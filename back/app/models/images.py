@@ -1,7 +1,8 @@
 from datetime import datetime
-from sqlalchemy import DateTime,Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+
 from app.config.db import Base
+from sqlalchemy import DateTime, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class Images(Base):

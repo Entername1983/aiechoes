@@ -6,6 +6,7 @@ export type RepliesSchema = {
     id: number;
     timeCreated: string;
     model: string;
+    version: string;
     reply: string;
 };
 

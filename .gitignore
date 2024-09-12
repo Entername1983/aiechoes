@@ -1,5 +1,6 @@
 back/myenv
 back/app/.env
+back/.env
 back/app/__pycache__
 .prettierrc
 front/.env.development

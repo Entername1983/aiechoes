@@ -1,6 +1,8 @@
+import json
 from contextlib import asynccontextmanager
 
 from app.config.posthog import setup_post_hog
+from app.dependencies.settings import get_settings
 from app.routes.replies import replies_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,8 +25,12 @@ async def lifespan(app: FastAPI):
     yield
 
 
+settings = get_settings()
+
+
 def create_app():
     print("Creating app")
+    print(json.dumps(settings.model_dump(), indent=4))
     app = FastAPI(
         generate_unique_id_function=custom_generate_unique_id, lifespan=lifespan
     )

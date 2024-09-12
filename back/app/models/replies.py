@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from app.config.db import Base
 from sqlalchemy import DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
+
+from app.config.db import Base
 
 
 class Replies(Base):
@@ -13,6 +14,7 @@ class Replies(Base):
     )
     model: Mapped[str] = mapped_column(String(50), nullable=False)
     reply: Mapped[str] = mapped_column(String(512), nullable=False)
+    version: Mapped[str] = mapped_column(String(50), nullable=False)
 
     def to_dict(self):
         return {
@@ -22,4 +24,5 @@ class Replies(Base):
             else self.time_created,
             "model": self.model,
             "reply": self.reply,
+            "version": self.version if self.version else "not specified",
         }

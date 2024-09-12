@@ -1,12 +1,13 @@
 import logging
 
-from app.dependencies.settings import get_settings
-from sqlalchemy import create_engine, event
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import declarative_base
+
+from app.dependencies.settings import get_settings
 
 logger = logging.getLogger("App")
 settings = get_settings()

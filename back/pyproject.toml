@@ -1,0 +1,49 @@
+[tool.ruff.lint]
+select = ["ALL"]
+
+ignore = [
+"FA102",
+"ERA001",
+"D102",
+"TRY300",
+"FA100",
+"D101", 
+"PGH003",
+"D100",
+"D107",
+"D103",
+"TD003",
+"TD002",
+"D400",
+"D415",
+"D205",
+"D104",
+"TRY003",
+"FBT001",
+"FBT002",
+"SIM108",
+"ANN204",
+"N815",
+"D105",
+"D100",
+"PLR0913",
+"B008",
+"D106",
+"D401",
+"TD004",
+"FIX002",
+"DTZ005",
+"DTZ007",
+"DTZ005",
+"INP001",
+"EM101",
+]
+[tool.ruff]
+fix = true 
+exclude = ["tests/*", "server/tests/*", "models/helpers/log_decorators.py", "tools/code_review.py"]
+line-length = 100
+
+
+
+
+

@@ -1,7 +1,6 @@
-from typing import Optional
+from pydantic import BaseModel
 
 from app.schemas.config import config
-from pydantic import BaseModel, Field
 
 
 class RepliesSchema(BaseModel):
@@ -9,6 +8,7 @@ class RepliesSchema(BaseModel):
     id: int
     time_created: str
     model: str
+    version: str
     reply: str
 
 

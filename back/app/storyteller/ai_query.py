@@ -8,6 +8,8 @@ from openai import (
     AsyncOpenAI,
 )
 
+from app.exceptions.CallAiExceptions import CallAiExceptions
+
 settings = get_settings()
 
 
@@ -28,14 +30,12 @@ class AiQuery:
             return await self.query_mistral()
         if self.llm == "llama":
             return await self.query_llama()
-        else:
-            raise ValueError("Invalid llm")
+        raise CallAiExceptions.InvalidLlmError("Invalid llm")
 
     async def query_gpt(self) -> str:
-        print(f"Calling GPT with prompt: {self.prompt}")
-        openai = AsyncOpenAI(api_key=self.settings.openai_api_key)
+        openai = AsyncOpenAI(api_key=self.settings.open_ai.openai_api_key)
         response = await openai.chat.completions.create(
-            model="gpt-4o",
+            model=self.settings.open_ai.main_model,
             messages=[
                 {
                     "role": "system",
@@ -43,33 +43,30 @@ class AiQuery:
                 },
                 {"role": "assistant", "content": self.prompt},
             ],
-            max_tokens=4095,
-            top_p=1,
-            frequency_penalty=0,
-            presence_penalty=0,
+            max_tokens=self.settings.open_ai.max_tokens,
+            top_p=self.settings.temperature,
+            frequency_penalty=self.settings.frequency_penalty,
+            presence_penalty=self.settings.presence_penalty,
         )
         response = response.choices[0].message.content
-        print("response", response)
         if response is None:
-            raise ValueError("OpenAI call Response is None")
+            raise CallAiExceptions.NoResponseError("OpenAI call Response is None")
         return response
 
     async def query_gemini(self) -> str:
-        print(f"Calling Gemini with prompt: {self.prompt}")
-        genai.configure(api_key=self.settings.gemini_api_key)
-        model = genai.GenerativeModel("gemini-1.5-pro")
+        genai.configure(api_key=self.settings.gemini.gemini_api_key)
+        model = genai.GenerativeModel(self.settings.gemini.main_model)
         response = model.generate_content(self.prompt)
-        print("response", response)
         return response.text
 
     async def query_claude(self) -> str:
-        print(f"Calling Claude with prompt: {self.prompt}")
         anthropic = AsyncAnthropic(
-            api_key=self.settings.anthropic_api_key,
+            api_key=self.settings.anthropic.anthropic_api_key,
         )
         completion = anthropic.messages.create(
-            model="claude-3-opus-20240229",
-            max_tokens=2000,
+            temperature=self.settings.temperature,
+            model=self.settings.anthropic.main_model,
+            max_tokens=self.settings.anthropic.max_tokens,
             messages=[
                 {"role": "user", "content": self.prompt},
             ],
@@ -79,31 +76,35 @@ class AiQuery:
         return response.content[0].text
 
     async def query_mistral(self) -> str:
-        client = Mistral(api_key=self.settings.mistral_api_key)
-        model = "mistral-large-latest"
-        messages = [UserMessage(role="user", content=self.prompt)]
+        client = Mistral(api_key=self.settings.mistral.mistral_api_key)
+        user_message = UserMessage(role="user", content=self.prompt)
+        messages = [user_message]
         chat_response = await client.chat.complete_async(
-            model=model,
+            model=self.settings.mistral.main_model,
             messages=messages,
         )
-        print(chat_response.choices[0].message.content)
-        return chat_response.choices[0].message.content
+        if chat_response is None or chat_response.choices is None:
+            raise CallAiExceptions.NoResponseError("Mistral call Response is None")
+        content = chat_response.choices[0].message.content
+        if isinstance(content, str):
+            return content
+        raise CallAiExceptions.InvalidResponseError(
+            "Mistral call Response is not a string",
+        )
 
     async def query_llama(self) -> str:
-        print(f"Calling Llama with prompt: {self.prompt}")
-        client = replicate.Client(api_token=self.settings.replicate_api_key)
-        input = {
-            "top_p": 0.9,
+        client = replicate.Client(api_token=self.settings.llama.replicate_api_key)
+        input_to_llm = {
+            "top_p": self.settings.top_p,
             "prompt": self.prompt,
-            "min_tokens": 0,
-            "temperature": 0.6,
-            # "prompt_template": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a helpful assistant<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
-            "presence_penalty": 1.15,
+            "min_tokens": self.settings.llama.min_tokens,
+            "temperature": self.settings.temperature,
+            # "prompt_template": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou
+            # are a helpful assistant<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}
+            # <|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "presence_penalty": self.settings.presence_penalty,
         }
 
-        output = client.run("meta/meta-llama-3-70b-instruct", input=input)
+        output = client.run(f"meta/{self.settings.llama.main_model}", input=input_to_llm)
 
-        joined_output = "".join(output)
-        print("llama output", joined_output)
-        print(type(joined_output))
-        return joined_output
+        return "".join(output)

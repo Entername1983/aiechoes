@@ -88,21 +88,56 @@ class CorsSettings(BaseSettings):
     allow_headers: list[str] = ["*"]
 
 
-class AISettings(BaseSettings):
+# https://platform.openai.com/docs/models
+class OpenAiSettings(BaseSettings):
     openai_api_key: str
-    openai_main_model: str = "gpt-3.5-turbo-0125"
-    temperature: float = 0.2
-    images_model: str = "dall-e-2"
-    anthropic_api_key: str
-    mistral_api_key: str
-    gemini_api_key: str
-    replicate_api_key: str
-    max_ai_caller_attempts: int = 3
-    claude_main_model: str = "claude-instant-1.2"
+    main_model: str = "gpt-4o-mini"
+    image_model: str = "dall-e-2"
     audio_model: str = "whisper-1"
     image_size: str = "256x256"
+    max_tokens: int = 4095
+
+
+# https://docs.anthropic.com/en/docs/resources/model-deprecations
+class AnthropicSettings(BaseSettings):
+    anthropic_api_key: str
+    main_model: str = "claude-3-haiku-20240307"
+    max_tokens: int = 2000
+
+# https://docs.mistral.ai/getting-started/models/
+# https://mistral.ai/technology/#pricing
+class MistralSettings(BaseSettings):
+    mistral_api_key: str
+    main_model: str = "open-mistral-nemo-2407"
+
+
+# https://ai.google.dev/pricing
+class GeminiSettings(BaseSettings):
+    gemini_api_key: str
+    main_model: str = "gemini-1.5-flash"
+
+
+# https://replicate.com/pricing
+class LlamaSettings(BaseSettings):
+    replicate_api_key: str
+    main_model: str = "meta-llama-3-8b"
+    min_tokens: int = 0
+
+
+class AISettings(BaseSettings):
+    open_ai: OpenAiSettings = OpenAiSettings()  # type: ignore
+    anthropic: AnthropicSettings = AnthropicSettings()  # type: ignore
+    mistral: MistralSettings = MistralSettings()  # type: ignore
+    gemini: GeminiSettings = GeminiSettings()  # type: ignore
+    llama: LlamaSettings = LlamaSettings()  # type: ignore
+    temperature: float = 0.2
+    frequency_penalty: float = 0.0
+    presence_penalty: float = 0.0
+    max_ai_caller_attempts: int = 3
     type_response: str = "text"
     echo: bool = True
+    top_p: float = 0.9
+    top_k: int = 0
 
 
 class MonitoringSettings(BaseSettings):

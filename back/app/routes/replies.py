@@ -1,12 +1,7 @@
-import json
-import logging
-from typing import Annotated, Optional
-
 from app.dependencies.db import GetDb
 from app.models.replies import Replies
-from app.schemas.replies import RepliesResponse, RepliesSchema
-from fastapi import APIRouter, Form, HTTPException, status
-from fastapi.responses import JSONResponse
+from app.schemas.replies import RepliesResponse
+from fastapi import APIRouter
 from sqlalchemy import desc, select
 
 replies_router = APIRouter()

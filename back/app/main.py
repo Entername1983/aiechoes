@@ -13,6 +13,8 @@ sentry_sdk.init(
 app: FastAPI = create_app()
 
 
+
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
