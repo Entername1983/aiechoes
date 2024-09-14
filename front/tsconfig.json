@@ -52,5 +52,5 @@
     "tailwind.config.ts",
     "./svg.d.ts"
   ],
-  "exclude": ["node_modules", "dist", "postcss.config.js", "eslint.config.mjs"]
+  "exclude": ["node_modules", "dist", "postcss.config.js", "eslint.config.js"]
 }

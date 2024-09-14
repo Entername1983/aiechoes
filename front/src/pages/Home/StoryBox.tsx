@@ -1,7 +1,8 @@
-import React from "react";
-import { RepliesSchema } from "../../client";
-import { ReplyBatch } from "./ReplyBatch";
 import { ArrowDownIcon, ArrowUpIcon } from "@heroicons/react/16/solid";
+import React from "react";
+
+import type { RepliesSchema } from "../../client";
+import { ReplyBatch } from "./ReplyBatch";
 
 interface StoryBoxProps {
   batches: RepliesSchema[][];
@@ -20,9 +21,9 @@ const StoryBox: React.FC<StoryBoxProps> = ({
   dummyRef,
 }) => {
   return (
-    <div className="  flex gap-4  p-2  ">
-      <div className="relative  p-2  z-10 rounded-2xl overflow-hidden">
-        <div className="max-h-[80vh] overflow-y-auto rounded-2xl px-2 ">
+    <div className="  flex justify-center md:w-[90vw]  md:gap-4 md:p-2 ">
+      <div className="relative  z-10 overflow-hidden rounded-2xl p-2 md:w-[85vw]">
+        <div className="max-h-[75vh] overflow-y-auto rounded-2xl px-2 ">
           {batches.map((batch, index) => (
             <div className=" py-2" key={index}>
               <ReplyBatch batch={batch} />
@@ -30,29 +31,29 @@ const StoryBox: React.FC<StoryBoxProps> = ({
           ))}
           <div ref={dummyRef}></div>
         </div>
-        <div className="absolute top-0 left-0 right-0 h-12 pointer-events-none z-10">
-          <div className="w-full h-full bg-gradient-to-b from-offBlack to-transparent"></div>
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12">
+          <div className="size-full bg-gradient-to-b from-offBlack to-transparent"></div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none z-10">
-          <div className="w-full h-full bg-gradient-to-t from-offBlack to-transparent"></div>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12">
+          <div className="size-full bg-gradient-to-t from-offBlack to-transparent"></div>
         </div>
       </div>
 
       <div className=" flex flex-col justify-between py-4">
         <button onClick={loadPreviousBatches} disabled={loadPreviousIsDisabled}>
           <ArrowUpIcon
-            className={`h-8 w-8  hover:fill-lightblue fill-paynesGray  ${
+            className={`size-8 fill-paynesGray  hover:fill-lightblue  ${
               loadPreviousIsDisabled
-                ? "cursor-not-allowed fill-charcoal"
+                ? "cursor-not-allowed fill-charcoal/30"
                 : "cursor-pointer fill-paynesGray "
             }`}
           />
         </button>
         <button onClick={loadNextBatches} disabled={loadNextIsDisabled}>
           <ArrowDownIcon
-            className={`h-8 w-8  hover:fill-lightblue fill-paynesGray  ${
+            className={`size-8 fill-paynesGray  hover:fill-lightblue  ${
               loadNextIsDisabled
-                ? "cursor-not-allowed fill-charcoal"
+                ? "cursor-not-allowed fill-charcoal/30"
                 : "cursor-pointer fill-paynesGray "
             }`}
           />

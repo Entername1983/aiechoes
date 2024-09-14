@@ -16,12 +16,12 @@ const ButtonMain: React.FC<ButtonMainProps> = ({
   return (
     <button
       type={type}
-      className={`bg-charcoal  border-[2px] border-lightblue rounded-xl py-2 px-4 text-xl text-center hover:bg-paynesGray hover:text-ghostWhite
+      className={`rounded-xl  border-2 border-lightblue bg-charcoal px-4 py-2 text-center text-xl hover:bg-paynesGray hover:text-ghostWhite
         
         ${
           disabled
-            ? "cursor-not-allowed bg-charcoal text-lightblue/20 border-lightblue/20"
-            : "cursor-pointer  text-lightblue border-lightblue"
+            ? "cursor-not-allowed border-lightblue/20 bg-charcoal text-lightblue/20"
+            : "cursor-pointer  border-lightblue text-lightblue"
         }`}
       disabled={disabled}
       onClick={onClick}

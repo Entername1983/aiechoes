@@ -1,8 +1,11 @@
-import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
+import {
+  createEntityAdapter,
+  createSlice,
+  type EntityState,
+} from "@reduxjs/toolkit";
 
-import { EntityState } from "@reduxjs/toolkit";
+import type { RepliesSchema } from "../../client/models/RepliesSchema";
 import type { RootState } from "../store";
-import { RepliesSchema } from "../../client/models/RepliesSchema";
 import { clearAllReplies, fetchReplies } from "./actions";
 
 const repliesAdapter = createEntityAdapter<RepliesSchema>({
@@ -36,7 +39,7 @@ const repliesSlice = createSlice({
     });
     builder.addCase(fetchReplies.rejected, (state, action) => {
       state.status = "failed";
-      state.error = action.error.message || null;
+      state.error = action.error.message ?? "An error occurred.";
     });
     builder.addCase(clearAllReplies.fulfilled, (state) => {
       repliesAdapter.removeAll(state);

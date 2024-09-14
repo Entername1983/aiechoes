@@ -1,7 +1,8 @@
-import React from "react";
-import { RepliesSchema } from "../../client";
-import { SingleReply } from "./SingleReply";
 import SampleStoryImage from "@assets/SampleStoryImage.png";
+import React from "react";
+
+import type { RepliesSchema } from "../../client";
+import { SingleReply } from "./SingleReply";
 interface ReplyBatchProps {
   batch: RepliesSchema[];
 }
@@ -9,18 +10,24 @@ interface ReplyBatchProps {
 const ReplyBatch: React.FC<ReplyBatchProps> = ({ batch }) => {
   const reversed = batch[0].batchId % 2 === 0;
   const reversedBatch = [...batch].reverse();
+
+  const batchFull = batch.length === 5;
   return (
     <div
       className={`flex gap-4 ${
-        reversed ? "md:flex-row-reverse flex-col" : "   flex-col  md:flex-row"
+        reversed ? "flex-col md:flex-row-reverse" : "flex-col  md:flex-row"
       } `}
     >
-      <div className=" bg-paynesGray rounded-xl  p-2 items-center justify-center flex">
+      <div className=" flex items-center  justify-center rounded-xl bg-paynesGray p-2">
         <img src={SampleStoryImage} alt="up" />
       </div>
-      <div className={`flex bg-paynesGray p-2 rounded-xl  flex-col flex-1`}>
+      <div
+        className={`flex flex-1 flex-col rounded-xl bg-paynesGray p-2 ${
+          batchFull ? "" : "justify-start"
+        }`}
+      >
         {reversedBatch.map((reply, index) => (
-          <div className="p-1 flex-1" key={index}>
+          <div className={`p-1 ${batchFull ? "grow" : ""}`} key={index}>
             <SingleReply reply={reply} />
           </div>
         ))}
