@@ -45,21 +45,13 @@ const SingleReply: React.FC<SingleReplyProps> = ({ reply }) => {
             setIsOpen(true);
           }}
         />
-        <p className="text-lg">
-          {reply.id}
-          {reply.reply}
-        </p>
+        <p className="text-lg">{reply.reply}</p>
       </div>
       <div className=" bottom-0 right-0 flex items-center gap-1  p-1">
         <ThumbsDown className="size-6 cursor-pointer stroke-paynesGray hover:stroke-lightblue" />
         <ThumbsUp className="size-6 cursor-pointer  stroke-paynesGray hover:stroke-lightblue" />
       </div>
-      <InfoModal
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-        reply={reply}
-        Icon={Icon}
-      />
+      <InfoModal isOpen={isOpen} setIsOpen={setIsOpen} reply={reply} />
     </div>
   );
 };

@@ -44,7 +44,7 @@ const StoryBox: React.FC<StoryBoxProps> = ({
           <ArrowUpIcon
             className={`size-8 fill-paynesGray  hover:fill-lightblue  ${
               loadPreviousIsDisabled
-                ? "cursor-not-allowed fill-charcoal/30"
+                ? "cursor-not-allowed fill-charcoal/10"
                 : "cursor-pointer fill-paynesGray "
             }`}
           />
@@ -53,7 +53,7 @@ const StoryBox: React.FC<StoryBoxProps> = ({
           <ArrowDownIcon
             className={`size-8 fill-paynesGray  hover:fill-lightblue  ${
               loadNextIsDisabled
-                ? "cursor-not-allowed fill-charcoal/30"
+                ? "cursor-not-allowed fill-charcoal/10"
                 : "cursor-pointer fill-paynesGray "
             }`}
           />

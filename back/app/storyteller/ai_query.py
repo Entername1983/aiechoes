@@ -1,3 +1,5 @@
+from typing import Union
+
 import google.generativeai as genai
 import replicate
 import replicate.client
@@ -108,3 +110,19 @@ class AiQuery:
         output = client.run(f"meta/{self.settings.llama.main_model}", input=input_to_llm)
 
         return "".join(output)
+
+    async def create_image(
+        self,
+        image_prompt: str,
+    ) -> Union[str, None]:
+        openai = AsyncOpenAI(api_key=self.settings.open_ai.openai_api_key)
+        response = await openai.images.generate(
+            model=self.settings.open_ai.image_model,
+            prompt=image_prompt,
+            n=1,
+            response_format="url",
+            size=self.settings.open_ai.image_size,  # type: ignore
+        )
+        if response is None:
+            raise CallAiExceptions.NoResponseError("OpenAI call Response is None for image")
+        return response.data[0].url
