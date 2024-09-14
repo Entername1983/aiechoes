@@ -9,21 +9,21 @@ import { request as __request } from '../core/request';
 export class RepliesService {
     /**
      * Get Replies
-     * @param page
-     * @param items
+     * @param batchOffset
+     * @param qtyBatches
      * @returns RepliesResponse Successful Response
      * @throws ApiError
      */
     public static getReplies(
-        page: number = 1,
-        items: number = 10,
+        batchOffset?: number,
+        qtyBatches: number = 2,
     ): CancelablePromise<RepliesResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/replies',
             query: {
-                'page': page,
-                'items': items,
+                'batch_offset': batchOffset,
+                'qty_batches': qtyBatches,
             },
             errors: {
                 422: `Validation Error`,

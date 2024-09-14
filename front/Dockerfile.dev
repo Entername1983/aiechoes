@@ -3,7 +3,7 @@ FROM node:18-alpine AS base-stage
 
 WORKDIR /code
 
-COPY package.json .
+COPY package.json package-lock.json ./
 
 RUN npm install
 

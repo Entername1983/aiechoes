@@ -1,11 +1,56 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.node.json"
+  "compilerOptions": {
+    "composite": true,
+    // "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    "baseUrl": "./src",
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noImplicitAny": true,
+
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["vite-plugin-svgr/client"],
+    "paths": {
+      "@source/*": ["*"],
+      "@assets/*": ["assets/*"],
+      "@pages/*": ["pages/*"],
+      "@store/*": ["lib/store/*"],
+      "@common/*": ["common/*"],
+      "@customTypes/*": ["types/*"],
+      "@routes/*": ["routes/*"],
+      "@components/*": ["components/*"],
+      "@client/*": ["client/*"],
+      "@utils/*": ["lib/utils/*"],
+      "@contexts/*": ["lib/contexts/*"],
+      "@services/*": ["lib/services/*"]
     }
-  ]
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.jsx",
+    "vite.config.js",
+    "tailwind.config.ts",
+    "./svg.d.ts"
+  ],
+  "exclude": ["node_modules", "dist", "postcss.config.js", "eslint.config.mjs"]
 }

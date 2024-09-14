@@ -10,6 +10,8 @@ class RepliesSchema(BaseModel):
     model: str
     version: str
     reply: str
+    batch_id: int
+    number_in_batch: int
 
 
 class RepliesResponse(BaseModel):

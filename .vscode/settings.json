@@ -100,5 +100,13 @@
   "eslint.options": {
     "overrideConfigFile": "eslint.config.mjs"
   },
-  "eslint.workingDirectories": ["${workspaceFolder}/front"]
+  "eslint.workingDirectories": ["${workspaceFolder}/front"],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "mjs",
+    "cjs"
+  ]
 }

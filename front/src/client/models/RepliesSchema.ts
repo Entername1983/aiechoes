@@ -8,5 +8,7 @@ export type RepliesSchema = {
     model: string;
     version: string;
     reply: string;
+    batchId: number;
+    numberInBatch: number;
 };
 
