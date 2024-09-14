@@ -5,3 +5,9 @@ back/app/__pycache__
 .prettierrc
 front/.env.development
 back/alembic
+front/node_modules
+front/.env.production
+front/.env.development
+postgres
+postgres-data
+.vscode
