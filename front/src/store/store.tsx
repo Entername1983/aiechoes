@@ -1,9 +1,16 @@
 import { configureStore } from "@reduxjs/toolkit";
+import {
+  type TypedUseSelectorHook,
+  useDispatch,
+  useSelector,
+} from "react-redux";
+
+import imagesReducer from "./images/imagesSlice";
 import repliesReducer from "./replies/repliesSlice";
-import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 export const store = configureStore({
   reducer: {
     replies: repliesReducer,
+    images: imagesReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
   devTools: process.env.NODE_ENV !== "production",

@@ -104,6 +104,7 @@ class AnthropicSettings(BaseSettings):
     main_model: str = "claude-3-haiku-20240307"
     max_tokens: int = 2000
 
+
 # https://docs.mistral.ai/getting-started/models/
 # https://mistral.ai/technology/#pricing
 class MistralSettings(BaseSettings):
@@ -118,9 +119,12 @@ class GeminiSettings(BaseSettings):
 
 
 # https://replicate.com/pricing
+## do not use meta-llama-3-8b, it suxxors
+## meta-llama-3-70b is also not able to follow simple instructions,
+# repeats the entire prompt before answering
 class LlamaSettings(BaseSettings):
     replicate_api_key: str
-    main_model: str = "meta-llama-3-8b"
+    main_model: str = "meta-llama-3-70b"
     min_tokens: int = 0
 
 
@@ -149,6 +153,15 @@ class MonitoringSettings(BaseSettings):
     monitoring_enabled: bool = False
 
 
+class S3Settings(BaseSettings):
+    s3_access_key_id: str
+    s3_secret_access_key: str
+    s3_public_endpoint: str
+    s3_internal_endpoint: str
+    s3_bucket_name: str
+    s3_default_region: str = "us-east-1"
+
+
 class Settings(BaseSettings):
     app: AppSettings = AppSettings()  # type: ignore
     logging: LoggingSettings = LoggingSettings()
@@ -159,3 +172,4 @@ class Settings(BaseSettings):
     cors: CorsSettings = CorsSettings()
     ai: AISettings = AISettings()  # type: ignore
     story: StorySettings = StorySettings()
+    s3: S3Settings = S3Settings()  # type: ignore

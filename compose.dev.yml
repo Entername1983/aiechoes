@@ -16,6 +16,8 @@ services:
     restart: unless-stopped
     env_file:
       - ./back/app/.env
+    networks:
+      - app-network
     # depends_on:
     #   - redis
 
@@ -42,7 +44,8 @@ services:
     volumes:
       - ./postgres:/docker-entrypoint-initdb.d
       - ./postgres-data:/var/lib/postgresql/data
-
+    networks:
+      - app-network
     ports:
       - "5431:5432"
 
@@ -58,6 +61,24 @@ services:
         "--loadmodule /opt/redis-stack/lib/redisearch.so",
         "--loadmodule /opt/redis-stack/lib/rejson.so",
       ]
+    networks:
+      - app-network
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000" # MinIO API Port
+      - "9001:9001" # MinIO Console Port
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    networks:
+      - app-network
+volumes:
+  minio_data:
+
 networks:
   app-network:
 # docker-compose -f compose.dev.yml up -d

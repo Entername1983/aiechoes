@@ -12,6 +12,7 @@
     "generate-client": "openapi --input http://localhost:5000/openapi.json --output ./src/client --client axios && cp OpenAPI.ts src/client/core/"
   },
   "dependencies": {
+    "@headlessui/react": "^2.1.8",
     "@heroicons/react": "^2.1.5",
     "@reduxjs/toolkit": "^2.2.7",
     "axios": "^1.7.2",
@@ -38,6 +39,7 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
     "eslint-plugin-simple-import-sort": "^12.1.1",
+    "globals": "^15.9.0",
     "install": "^0.13.0",
     "npm": "^10.8.3",
     "openapi-typescript-codegen": "^0.29.0",

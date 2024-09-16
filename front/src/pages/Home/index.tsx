@@ -1,11 +1,12 @@
+import { ButtonMain } from "@source/common/Buttons/ButtonMain";
 import React, { useEffect, useState } from "react";
-import { RepliesSchema } from "../../client";
-import { StoryBox } from "./StoryBox";
+
+import type { RepliesSchema } from "../../client";
 import { Spinner } from "../../common/Spinner";
+import { clearAllReplies, fetchReplies } from "../../store/replies/actions";
 import { selectAllReplies } from "../../store/replies/repliesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
-import { clearAllReplies, fetchReplies } from "../../store/replies/actions";
-import { ButtonMain } from "@source/common/Buttons/ButtonMain";
+import { StoryBox } from "./StoryBox";
 
 // load in batches, need to seperate batches
 // if we click top, load the 2 previous batches
@@ -14,8 +15,7 @@ import { ButtonMain } from "@source/common/Buttons/ButtonMain";
 // bottom button disabled if no more batches to load
 // top button disabled if at the start of story
 
-interface HomeProps {}
-const Home: React.FC<HomeProps> = () => {
+const Home: React.FC = () => {
   const [repliesLoaded, setRepliesLoaded] = useState<boolean>(false);
   const [batchOffset, setBatchOffset] = useState<number>(0);
   const dispatch = useAppDispatch();
@@ -28,44 +28,50 @@ const Home: React.FC<HomeProps> = () => {
   const [loadNextIsDisabled, setLoadNextIsDisabled] = useState<boolean>(true);
   const dummyRef = React.useRef<HTMLDivElement>(null);
   const [scrollIntoView, setScrollIntoView] = useState<boolean>(false);
+  const [title, setTitle] = useState<string>("The story so far...");
 
   useEffect(() => {
-    if (batchOffset * 2 > highestBatchId + 1) {
+    if (batchOffset > highestBatchId + 1) {
       setLoadPreviousIsDisabled(true);
     }
-  }, [batchOffset]);
+    if (batchOffset < 0) {
+      setLoadNextIsDisabled(true);
+    }
+  }, [batchOffset, highestBatchId]);
 
-  const loadOnceUponATime = async () => {
-    dispatch(clearAllReplies());
-    console.log("highestBatchId", highestBatchId);
+  const loadOnceUponATime = async (): Promise<void> => {
+    void dispatch(clearAllReplies());
     setBatchOffset(Math.ceil(highestBatchId / 2) + 1);
     setRepliesLoaded(false);
     setLoadNextIsDisabled(false);
+    setLoadPreviousIsDisabled(true);
+    setTitle("Once upon a time...");
   };
 
-  const loadTheStorySoFar = async () => {
-    dispatch(clearAllReplies());
+  const loadTheStorySoFar = async (): Promise<void> => {
+    void dispatch(clearAllReplies());
     setBatchOffset(0);
     setRepliesLoaded(false);
     setLoadPreviousIsDisabled(false);
+    setLoadNextIsDisabled(true);
+    setTitle("The story so far...");
   };
 
-  const loadPreviousBatches = async () => {
+  const loadPreviousBatches = async (): Promise<void> => {
     setRepliesLoaded(false);
     setBatchOffset((prevOffset) => prevOffset + 2);
   };
 
-  const loadNextBatches = async () => {
+  const loadNextBatches = async (): Promise<void> => {
     setRepliesLoaded(false);
     setBatchOffset((prevOffset) => prevOffset - 2);
     setScrollIntoView(true);
   };
 
   useEffect(() => {
-    console.log("in useEffect, scrollintoView", scrollIntoView);
     if (scrollIntoView) {
       setTimeout(() => {
-        if (dummyRef.current) {
+        if (dummyRef.current !== null) {
           dummyRef.current.scrollIntoView({
             behavior: "smooth",
             block: "end",
@@ -75,26 +81,26 @@ const Home: React.FC<HomeProps> = () => {
         setScrollIntoView(false);
       }, 1);
     }
-  }, [allReplies]);
+  }, [allReplies, scrollIntoView]);
 
   useEffect(() => {
-    if (repliesLoaded === false) {
-      dispatch(
+    if (!repliesLoaded) {
+      void dispatch(
         fetchReplies({
           data: { batch_offset: batchOffset, qty_batches: 2 },
         })
       );
     }
     setRepliesLoaded(true);
-  }, [batchOffset]);
+  }, [batchOffset, dispatch, repliesLoaded]);
 
   useEffect(() => {
-    const turnRepliesIntoBatchesUsingTheirBatchId = () => {
+    const turnRepliesIntoBatchesUsingTheirBatchId = (): void => {
       const batches: RepliesSchema[][] = [];
       let highestBatchIdNumber = 0;
       let lowestBatchIdNumber = Infinity;
       allReplies.forEach((reply) => {
-        if (batches[reply.batchId]) {
+        if (batches[reply.batchId] !== undefined) {
           batches[reply.batchId].push(reply);
         } else {
           batches[reply.batchId] = [reply];
@@ -114,15 +120,28 @@ const Home: React.FC<HomeProps> = () => {
     setRepliesLoaded(true);
   }, [allReplies]);
 
+  console.log("highest batch id", highestBatchId);
+  console.log("batch offset", batchOffset);
+  console.log("next is disabled", loadNextIsDisabled);
+  console.log("previous is disabled", loadPreviousIsDisabled);
   return (
     <div className=" ">
-      <div className="p-4">
-        <div className="flex justify-end pr-2">
-          <ButtonMain
-            disabled={loadPreviousIsDisabled}
-            onClick={loadOnceUponATime}
-            text="Once upon a time..."
-          />
+      <div className="px-4 py-2">
+        <div className="flex justify-between pr-2">
+          <h1 className="pl-10 pt-4 text-3xl text-ghostWhite">{title}</h1>
+          <div className="flex flex-col gap-2 md:flex">
+            {" "}
+            <ButtonMain
+              disabled={loadPreviousIsDisabled}
+              onClick={loadOnceUponATime}
+              text="Once upon a time..."
+            />
+            <ButtonMain
+              disabled={loadNextIsDisabled}
+              onClick={loadTheStorySoFar}
+              text="The story so far..."
+            />
+          </div>
         </div>
         <div className="flex items-center justify-center ">
           {!repliesLoaded ? (
@@ -138,13 +157,7 @@ const Home: React.FC<HomeProps> = () => {
             />
           )}
         </div>
-        <div className="flex justify-end pr-2">
-          <ButtonMain
-            disabled={loadNextIsDisabled}
-            onClick={loadTheStorySoFar}
-            text="The story so far..."
-          />
-        </div>
+        <div className="flex justify-end pr-2"></div>
       </div>
     </div>
   );

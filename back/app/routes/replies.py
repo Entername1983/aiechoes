@@ -1,9 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from sqlalchemy import desc, select
 
 from app.dependencies.db import GetDb
+from app.models.images import Images
 from app.models.replies import Replies
-from app.schemas.replies import RepliesResponse
+from app.s3.storage_manager import StorageManager
+from app.schemas.replies import PreSignedUrlResponse, RepliesResponse
 
 replies_router = APIRouter()
 
@@ -52,6 +54,21 @@ async def get_replies(db: GetDb, batch_offset: int = 0, qty_batches: int = 2) ->
     replies = await get_next_two_batches_of_replies_from_db(db, batch_offset, qty_batches)
     list_replies = [reply.to_dict() for reply in replies]
     return {"replies_list": list_replies}
+
+
+@replies_router.get("/image", response_model=PreSignedUrlResponse, tags=["image"])
+async def get_image_for_batch(db: GetDb, batch_id: int) -> dict:
+    image_entry = await get_db_entry_from_db(db, batch_id)
+    if image_entry is None:
+        raise HTTPException(status_code=404, detail="Image not found")
+    pre_signed_url = await StorageManager.create_presigned_url(image_entry.image_url)
+    return {"images_list": [{"id": batch_id, "url": pre_signed_url}]}
+
+
+async def get_db_entry_from_db(db: GetDb, batch_id: int) -> Images:
+    query = select(Images).filter(Images.batch_id == batch_id)
+    result = await db.execute(query)
+    return result.scalar()
 
 
 # replies_router = APIRouter()

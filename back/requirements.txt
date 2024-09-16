@@ -59,3 +59,6 @@ typing_extensions==4.12.2
 tzlocal==5.2
 uritemplate==4.1.1
 urllib3==2.2.2
+sentry_sdk==2.14.0
+aioboto3==13.1.1
+posthog==3.6.6

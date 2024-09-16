@@ -3,7 +3,7 @@ import functools
 import logging
 import time
 
-from dependencies.settings import get_settings
+from app.dependencies.settings import get_settings
 
 settings = get_settings()
 logger = logging.getLogger("App")
@@ -29,7 +29,7 @@ def log_deco(f):
             }
             logger.info(f"Calling {f.__name__} ...")
             logger.debug(
-                f"Entering function {f.__name__} with args: {truncated_args} and kwargs: {truncated_kwargs}"
+                f"Entering function {f.__name__} with args: {truncated_args} and kwargs: {truncated_kwargs}",
             )
             result = f(*args, **kwargs)
             truncated_result = (
@@ -38,7 +38,7 @@ def log_deco(f):
                 else result
             )
             logger.debug(
-                f"Exiting function {f.__name__} with result: {truncated_result}"
+                f"Exiting function {f.__name__} with result: {truncated_result}",
             )
             return result
         except Exception as e:
@@ -69,7 +69,7 @@ def log_deco(f):
             }
             logger.info(f"Calling {f.__name__} ...")
             logger.debug(
-                f"Entering function {f.__name__} with args: {truncated_args} and kwargs: {truncated_kwargs}"
+                f"Entering function {f.__name__} with args: {truncated_args} and kwargs: {truncated_kwargs}",
             )
             if asyncio.iscoroutinefunction(f):
                 result = await f(*args, **kwargs)
@@ -81,7 +81,7 @@ def log_deco(f):
                 else result
             )
             logger.debug(
-                f"Exiting function {f.__name__} with result: {truncated_result}"
+                f"Exiting function {f.__name__} with result: {truncated_result}",
             )
             return result
         except Exception as e:
@@ -97,5 +97,4 @@ def log_deco(f):
 
     if asyncio.iscoroutinefunction(f):
         return async_wrapper
-    else:
-        return wrapper
+    return wrapper
