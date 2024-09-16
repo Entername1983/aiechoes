@@ -14,6 +14,28 @@ class RepliesSchema(BaseModel):
     number_in_batch: int
 
 
+class ImagesSchema(BaseModel):
+    model_config = config
+    id: int
+    batch_id: int
+    title: str
+    image_url: str
+    thumbnail_url: str
+    img_model: str
+    time_created: str
+
+
+class SimpleImagesSchema(BaseModel):
+    model_config = config
+    id: int
+    url: str
+
+
+class PreSignedUrlResponse(BaseModel):
+    model_config = config
+    images_list: list[SimpleImagesSchema]
+
+
 class RepliesResponse(BaseModel):
     model_config = config
     replies_list: list[RepliesSchema]

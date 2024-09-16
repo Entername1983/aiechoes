@@ -119,9 +119,12 @@ class GeminiSettings(BaseSettings):
 
 
 # https://replicate.com/pricing
+## do not use meta-llama-3-8b, it suxxors
+## meta-llama-3-70b is also not able to follow simple instructions,
+# repeats the entire prompt before answering
 class LlamaSettings(BaseSettings):
     replicate_api_key: str
-    main_model: str = "meta-llama-3-8b"
+    main_model: str = "meta-llama-3-70b"
     min_tokens: int = 0
 
 
@@ -153,7 +156,8 @@ class MonitoringSettings(BaseSettings):
 class S3Settings(BaseSettings):
     s3_access_key_id: str
     s3_secret_access_key: str
-    s3_endpoint: str
+    s3_public_endpoint: str
+    s3_internal_endpoint: str
     s3_bucket_name: str
     s3_default_region: str = "us-east-1"
 

@@ -29,3 +29,7 @@ class CallAiExceptions:
     class ResponseTooLongError(MyBaseError):
         def __init__(self, message: str = "Response too long."):
             super().__init__(message)
+
+    class NoImageUrlError(MyBaseError):
+        def __init__(self, message: str = "No image URL."):
+            super().__init__(message)

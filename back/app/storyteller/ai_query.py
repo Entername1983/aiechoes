@@ -4,12 +4,12 @@ import google.generativeai as genai
 import replicate
 import replicate.client
 from anthropic import AsyncAnthropic
-from dependencies.settings import get_settings
 from mistralai import Mistral, UserMessage
 from openai import (
     AsyncOpenAI,
 )
 
+from app.dependencies.settings import get_settings
 from app.exceptions.CallAiExceptions import CallAiExceptions
 
 settings = get_settings()
@@ -59,6 +59,13 @@ class AiQuery:
         genai.configure(api_key=self.settings.gemini.gemini_api_key)
         model = genai.GenerativeModel(self.settings.gemini.main_model)
         response = model.generate_content(self.prompt)
+        try:
+            text = response.text
+        except Exception as e:
+            msg = f"Invalid response from Gemini: {e}"
+            raise CallAiExceptions.InvalidResponseError(
+                msg,
+            ) from e
         return response.text
 
     async def query_claude(self) -> str:
@@ -97,18 +104,22 @@ class AiQuery:
     async def query_llama(self) -> str:
         client = replicate.Client(api_token=self.settings.llama.replicate_api_key)
         input_to_llm = {
-            "top_p": self.settings.top_p,
+            # "top_p": self.settings.top_p,
             "prompt": self.prompt,
-            "min_tokens": self.settings.llama.min_tokens,
-            "temperature": self.settings.temperature,
+            # "min_tokens": self.settings.llama.min_tokens,
+            # "temperature": self.settings.temperature,
             # "prompt_template": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou
             # are a helpful assistant<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}
             # <|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
-            "presence_penalty": self.settings.presence_penalty,
+            # "presence_penalty": self.settings.presence_penalty,
         }
 
         output = client.run(f"meta/{self.settings.llama.main_model}", input=input_to_llm)
-
+        response = "".join(output)
+        print("-------------------------------- LLAMA PROMPT --------------------------------")
+        print(self.prompt)
+        print("-------------------------------- LLAMA RESPONSE --------------------------------")
+        print(response)
         return "".join(output)
 
     async def create_image(

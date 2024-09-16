@@ -31,7 +31,7 @@ const Home: React.FC = () => {
   const [title, setTitle] = useState<string>("The story so far...");
 
   useEffect(() => {
-    if (batchOffset * 2 > highestBatchId + 1) {
+    if (batchOffset > highestBatchId + 1) {
       setLoadPreviousIsDisabled(true);
     }
     if (batchOffset < 0) {
@@ -120,6 +120,10 @@ const Home: React.FC = () => {
     setRepliesLoaded(true);
   }, [allReplies]);
 
+  console.log("highest batch id", highestBatchId);
+  console.log("batch offset", batchOffset);
+  console.log("next is disabled", loadNextIsDisabled);
+  console.log("previous is disabled", loadPreviousIsDisabled);
   return (
     <div className=" ">
       <div className="px-4 py-2">
