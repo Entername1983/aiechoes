@@ -11,3 +11,4 @@ front/.env.development
 postgres
 postgres-data
 .vscode
+__pycache__/
