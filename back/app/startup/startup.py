@@ -1,4 +1,5 @@
 import json
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -9,12 +10,19 @@ from app.config.posthog import setup_post_hog
 from app.dependencies.settings import get_settings
 from app.routes.replies import replies_router
 
+logging.basicConfig(
+    level=logging.DEBUG,  # Set to DEBUG to capture all log messages
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler()],  # Ensure logs go to the console
+)
+log = logging.getLogger("App")
 
-def setup_routes(app):
+
+def setup_routes(app: FastAPI) -> None:
     app.include_router(replies_router)
 
 
-def custom_generate_unique_id(route: APIRoute):
+def custom_generate_unique_id(route: APIRoute) -> str:
     """USE for SDK generation"""
     return f"{route.name}"
 
@@ -29,9 +37,11 @@ async def lifespan(app: FastAPI):
 settings = get_settings()
 
 
-def create_app():
+def create_app() -> FastAPI:
     print("Creating app")
     print(json.dumps(settings.model_dump(), indent=4))
+    log.info(json.dumps(settings.model_dump(), indent=4))
+
     app = FastAPI(
         generate_unique_id_function=custom_generate_unique_id,
         lifespan=lifespan,
