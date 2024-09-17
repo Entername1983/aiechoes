@@ -40,7 +40,6 @@ services:
       dockerfile: Dockerfile.prod
     volumes:
       - /code/node_modules
-    network_mode: "host"
     image: aiechoes_frontend:1.0
     restart: always
     networks:
