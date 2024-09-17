@@ -1,5 +1,7 @@
 services:
   backend:
+    env_file:
+      - .compose.prod.env
     build:
       context: ./back
       dockerfile: Dockerfile.prod
@@ -48,6 +50,8 @@ services:
       - 5173:5173
 
   postgres_ai_echoes:
+    env_file:
+      - .compose.prod.env
     image: postgres
     environment:
       POSTGRES_DB: aiechoes_dev
@@ -75,6 +79,8 @@ services:
       - internal-network
 
   minio:
+    env_file:
+      - .compose.prod.env
     restart: always
     image: minio/minio:latest
     command: server /data --console-address ":9001"
