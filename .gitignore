@@ -15,3 +15,12 @@ __pycache__
 *.pyc
 compose.dev.env
 compose.prod.env
+
+
+
+
+
+back/app/startup/__pycache__/startup.cpython-312.pyc
+back/app/storyteller/__pycache__/ai_replies.cpython-312.pyc
+back/app/storyteller/__pycache__/storyteller.cpython-312.pyc
+back/app/utils/__pycache__/log_decorators.cpython-312.pyc
