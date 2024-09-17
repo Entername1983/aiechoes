@@ -12,4 +12,9 @@ postgres
 postgres-data
 .vscode
 __pycache__
+<<<<<<< HEAD
 *.pyc
+=======
+*.pyc
+compose.dev.env
+>>>>>>> main
