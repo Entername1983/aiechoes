@@ -3,7 +3,6 @@ import logging
 import re
 from datetime import datetime as dt
 from datetime import timezone
-from pathlib import Path
 
 import asyncpg
 import requests
@@ -33,9 +32,9 @@ echo_enabled = settings.app.environment == "development"
 
 
 engine = create_async_engine(
-    "postgresql+asyncpg://user:1234@localhost:5431/db",
+    settings.db.async_sqlalchemy_database_uri,
     **settings.db.async_sqlalchemy_engine_options,
-    echo=False,
+    echo=True,
 )
 session_factory = async_sessionmaker(
     engine,
@@ -169,15 +168,7 @@ class AiReplies:
         if self.image_url is None:
             raise CallAiExceptions.NoImageUrlError
         image = await download_image(self.image_url)
-        img_name = f"batch_{self.batch_id}_{dt.now(timezone.utc)}.png"
-        img_name = sanitize_filename(img_name)
-        directory_path = Path("temp").resolve()
-        if not directory_path.exists():
-            directory_path.mkdir(parents=True, exist_ok=True)
-        img_path = Path(directory_path) / img_name
-        print("img_path", img_path)
-        # async with await anyio.open_file(img_path, "wb") as f:
-        #     await f.write(image)
+        img_name = sanitize_filename(f"batch_{self.batch_id}_{dt.now(timezone.utc)}.png")
         await StorageManager.upload_file_to_s3(image, "story-images", img_name)
         self.img_uri = "story-images/" + img_name
         self.img_name = img_name

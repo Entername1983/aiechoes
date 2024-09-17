@@ -5,19 +5,31 @@ services:
       dockerfile: Dockerfile.prod
     ports:
       - "5000:8000"
-    volumes:
-      - ./back:/code
     environment:
-      - UVICORN_HOST=0.0.0.0
-      - UVICORN_PORT=8000
-      - UVICORN_LOG_LEVEL=debug
-      - DEBUG=1
-    command: uvicorn app.main:app --host 0.0.0.0 --reload
+      UVICORN_HOST: ${UVICORN_HOST}
+      UVICORN_PORT: ${UVICORN_PORT}
+      UVICORN_LOG_LEVEL: ${UVICORN_LOG_LEVEL}
+      DEBUG: ${DEBUG}
+    command: uvicorn app.main:app --host ${UVICORN_HOST}
     restart: always
+    networks:
+      - internal-network
+      - frontend-network
+    depends_on:
+      - redis
+      - postgres_ai_echoes
+
+  storyteller:
+    build:
+      context: ./back
+      dockerfile: docker/Dockerfile.storyteller
+    ports:
+      - "5001:8001"
+    restart: unless-stopped
     env_file:
       - ./back/app/.env
     networks:
-      - app-network
+      - internal-network
     depends_on:
       - redis
       - postgres_ai_echoes
@@ -27,26 +39,25 @@ services:
       context: ./front
       dockerfile: Dockerfile.prod
     volumes:
-      - ./front:/code
       - /code/node_modules
     network_mode: "host"
     image: aiechoes_frontend:1.0
     restart: always
-    environment:
-      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - frontend-network
 
   postgres_ai_echoes:
     image: postgres
     environment:
       POSTGRES_DB: aiechoes_dev
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     restart: always
     volumes:
       - ./postgres:/docker-entrypoint-initdb.d
       - ./postgres-data:/var/lib/postgresql/data
     networks:
-      - app-network
+      - internal-network
     ports:
       - "5431:5432"
 
@@ -55,16 +66,13 @@ services:
     ports:
       - "6379:6379"
     restart: always
-    command:
-      [
-        "redis-server",
-        "--requirepass",
-        "1234",
-        "--loadmodule /opt/redis-stack/lib/redisearch.so",
-        "--loadmodule /opt/redis-stack/lib/rejson.so",
-      ]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: >
+      sh -c 'redis-server --requirepass "$REDIS_PASSWORD" --loadmodule /opt/redis-stack/lib/redisearch.so --loadmodule /opt/redis-stack/lib/rejson.so'
     networks:
-      - app-network
+      - internal-network
+
   minio:
     restart: always
     image: minio/minio:latest
@@ -75,13 +83,17 @@ services:
     volumes:
       - minio_data:/data
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     networks:
-      - app-network
+      - internal-network
+
 volumes:
   minio_data:
 
 networks:
-  app-network:
+  frontend-network:
+    driver: bridge
+  internal-network:
+    driver: bridge
 # docker-compose -f compose.dev.yml up -d

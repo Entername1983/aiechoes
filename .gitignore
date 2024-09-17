@@ -11,4 +11,6 @@ front/.env.development
 postgres
 postgres-data
 .vscode
-__pycache__/
+__pycache__
+*.pyc
+compose.dev.env

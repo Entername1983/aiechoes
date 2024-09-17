@@ -7,7 +7,7 @@ from app.dependencies.settings import get_settings
 
 settings = get_settings()
 logger = logging.getLogger("App")
-logger.setLevel(logging.getLevelName(settings.logging.level))
+logger.setLevel(settings.logging.level)
 
 
 def log_deco(f):
@@ -43,7 +43,7 @@ def log_deco(f):
             return result
         except Exception as e:
             extra_info = kwargs.get("extra_info", "No extra info provided.")
-            logger.error(
+            logger.exception(
                 f"Exception occurred in function {f.__name__}. Extra info: {extra_info}",
                 exc_info=settings.app.stacktrace,
             )

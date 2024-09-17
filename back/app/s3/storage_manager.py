@@ -53,7 +53,7 @@ class StorageManager:
     async def upload_file_to_s3(file: bytes, bucket_name: str, object_name: str) -> None:
         async with async_session.client(
             "s3",
-            endpoint_url="http://localhost:9000",
+            endpoint_url=settings.s3.s3_internal_endpoint,
             aws_access_key_id=settings.s3.s3_access_key_id,
             aws_secret_access_key=settings.s3.s3_secret_access_key,
             config=Config(signature_version="s3v4"),
