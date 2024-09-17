@@ -18,7 +18,7 @@ compose.dev.env
 compose.prod.env
 
 
-
+.env
 
 
 back/app/startup/__pycache__/startup.cpython-312.pyc
