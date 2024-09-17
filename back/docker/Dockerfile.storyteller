@@ -1,0 +1,28 @@
+# Build stage
+FROM python:3.12-alpine AS builder
+
+WORKDIR /code
+
+RUN apk --no-cache add \
+    mariadb-connector-c-dev \
+    build-base \
+    mariadb-dev
+
+COPY ../reqs/requirements.txt /code/requirements.txt
+
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+COPY ../ /code
+
+FROM python:3.12-alpine
+
+WORKDIR /code
+
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+COPY ../ /code
+
+EXPOSE 81
+
+CMD ["python", "-m", "app.storyteller.storyteller"]
