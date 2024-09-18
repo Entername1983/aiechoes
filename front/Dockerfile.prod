@@ -15,8 +15,36 @@ FROM base-stage AS dev-stage
 # Copy the appropriate environment file for development
 # COPY .env.development .env
 
-# Expose the port that the development server runs on
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL $VITE_API_BASE_URL
+
+RUN npm run build
+
+# Production Stage
+FROM nginx:stable-alpine AS production-stage
+
+# Copy the build output to Nginx's html directory
+COPY --from=build-stage /app/build /usr/share/nginx/html
+
 EXPOSE 5173
 
-# Start the React app in development mode
-CMD ["npm", "start"]
+
+# Start Nginx server
+CMD ["nginx", "-g", "daemon off;"]
+
+
+
+
+
+
+
+
+
+
+
+# # Expose the port that the development server runs on
+# EXPOSE 5173
+
+# # Start the React app in development mode
+# # CMD ["npm", "start"]
+# CMD ["npm", "run", "serve"]
