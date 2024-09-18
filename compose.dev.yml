@@ -45,8 +45,8 @@ services:
     build:
       context: ./back
       dockerfile: docker/Dockerfile.storyteller
-    ports:
-      - "5001:8001"
+    # ports:
+    #   - "5001:8001"
     restart: unless-stopped
     env_file:
       - ./.env

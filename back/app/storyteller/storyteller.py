@@ -20,16 +20,15 @@ async def job_function() -> None:
 
 
 logging.basicConfig(
-    level=logging.DEBUG,  # Set to DEBUG to capture all log messages
+    level=logging.DEBUG,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()],  # Ensure logs go to the console
+    handlers=[logging.StreamHandler()],
 )
-log = logging.getLogger("App")
+log = logging.getLogger("Storyteller")
 
 scheduler = AsyncIOScheduler()
 
 trigger = CronTrigger(second="10")
-# trigger = CronTrigger(minute=f"*/{settings.story.interval_min}", second="0")
 
 
 scheduler.add_job(job_function, trigger)
@@ -41,10 +40,8 @@ settings_dict = settings.model_dump()
 
 
 async def main() -> None:
-    print(json.dumps(settings.model_dump(), indent=4))
+    log.info("-----------------Starting Storyteller-----------------")
     log.info(json.dumps(settings.model_dump(), indent=4))
-    print("Starting scheduler...")  # noqa: T201
-    print(f"Interval is {settings.story.interval_min}")  # noqa: T201
     scheduler.start()
     await asyncio.Event().wait()
 

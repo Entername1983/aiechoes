@@ -124,7 +124,7 @@ class GeminiSettings(BaseSettings):
 # repeats the entire prompt before answering
 class LlamaSettings(BaseSettings):
     replicate_api_key: str
-    main_model: str = "meta-llama-3-70b"
+    main_model: str = "meta-llama-3.1-405b-instruct"
     min_tokens: int = 0
 
 

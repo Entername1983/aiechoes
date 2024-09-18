@@ -13,7 +13,7 @@ COPY ./ /code
 FROM base-stage AS dev-stage
 
 # Copy the appropriate environment file for development
-COPY .env.development .env
+# COPY .env.development .env
 
 # Expose the port that the development server runs on
 EXPOSE 5173
