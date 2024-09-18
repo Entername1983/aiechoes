@@ -41,6 +41,8 @@ services:
       dockerfile: Dockerfile.prod
     volumes:
       - /code/node_modules
+      - ./front/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+
     image: aiechoes_frontend:1.0
     restart: always
     environment:
