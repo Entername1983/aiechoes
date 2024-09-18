@@ -24,7 +24,7 @@ FROM nginx:stable-alpine AS production-stage
 # Copy the build output from the build-stage to Nginx's html directory
 COPY --from=build-stage /code/dist /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 5173
 
 # Start Nginx server
 CMD ["nginx", "-g", "daemon off;"]
