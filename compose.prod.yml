@@ -46,7 +46,7 @@ services:
     image: aiechoes_frontend:1.0
     restart: always
     environment:
-      - VITE_API_BASE_URL=/api
+      - VITE_BACKEND_URL=/api
     networks:
       - internal-network
 
