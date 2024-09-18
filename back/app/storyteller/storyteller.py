@@ -28,7 +28,7 @@ log = logging.getLogger("Storyteller")
 
 scheduler = AsyncIOScheduler()
 
-trigger = CronTrigger(second="10")
+trigger = CronTrigger(second=settings.story.interval_min * 60)
 
 
 scheduler.add_job(job_function, trigger)
