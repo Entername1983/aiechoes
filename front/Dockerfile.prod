@@ -16,7 +16,7 @@ ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL $VITE_API_BASE_URL
 
 # Build the project (ensure that the build files are placed in /code/build)
-RUN npm run build
+RUN npm run build -- --debug
 
 # Production Stage
 FROM nginx:stable-alpine AS production-stage
