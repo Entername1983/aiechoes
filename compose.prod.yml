@@ -15,7 +15,6 @@ services:
     restart: always
     networks:
       - internal-network
-      - frontend-network
     depends_on:
       - redis
       - postgres_ai_echoes
