@@ -65,9 +65,9 @@ services:
       - /code/node_modules
     image: aiechoes_frontend:1.0
     restart: unless-stopped
-    env_file:
-      - ./.env
+
     environment:
+      - VITE_API_BASE_URL=/api
       - CHOKIDAR_USEPOLLING=true
     # ports:
     #   - 5173:5173

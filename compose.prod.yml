@@ -43,6 +43,8 @@ services:
       - /code/node_modules
     image: aiechoes_frontend:1.0
     restart: always
+    environment:
+      - VITE_API_BASE_URL=/api
     networks:
       - frontend-network
 
