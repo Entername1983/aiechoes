@@ -21,7 +21,7 @@ const Home: React.FC = () => {
   const dispatch = useAppDispatch();
   const allReplies = useAppSelector(selectAllReplies);
   const [highestBatchId, setHighestBatchId] = useState<number>(0);
-  const [lowestBatchId, setLowestBatchId] = useState<number>(0);
+  // const [lowestBatchId, setLowestBatchId] = useState<number>(0);
   const [batches, setBatches] = useState<RepliesSchema[][]>([]);
   const [loadPreviousIsDisabled, setLoadPreviousIsDisabled] =
     useState<boolean>(false);
@@ -112,7 +112,7 @@ const Home: React.FC = () => {
           }
         }
       });
-      setLowestBatchId(lowestBatchIdNumber);
+      // setLowestBatchId(lowestBatchIdNumber);
       setHighestBatchId(highestBatchIdNumber);
       setBatches(batches);
     };
@@ -120,10 +120,6 @@ const Home: React.FC = () => {
     setRepliesLoaded(true);
   }, [allReplies]);
 
-  console.log("highest batch id", highestBatchId);
-  console.log("batch offset", batchOffset);
-  console.log("next is disabled", loadNextIsDisabled);
-  console.log("previous is disabled", loadPreviousIsDisabled);
   return (
     <div className=" ">
       <div className="px-4 py-2">

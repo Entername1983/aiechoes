@@ -10,27 +10,60 @@ RUN npm install
 COPY ./ /code
 
 # Development Stage
-FROM base-stage AS dev-stage
-
-# Copy the appropriate environment file for development
-# COPY .env.development .env
+FROM base-stage AS build-stage
 
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL $VITE_API_BASE_URL
 
+# Build the project (ensure that the build files are placed in /code/build)
 RUN npm run build
 
 # Production Stage
 FROM nginx:stable-alpine AS production-stage
 
-# Copy the build output to Nginx's html directory
-COPY --from=build-stage /app/build /usr/share/nginx/html
+# Copy the build output from the build-stage to Nginx's html directory
+COPY --from=build-stage /code/dist /usr/share/nginx/html
 
-EXPOSE 5173
-
+EXPOSE 80
 
 # Start Nginx server
 CMD ["nginx", "-g", "daemon off;"]
+
+
+
+# Base Stage
+# FROM node:18-alpine AS base-stage
+
+# WORKDIR /code
+
+# COPY package.json package-lock.json ./
+
+# RUN npm install
+
+# COPY ./ /code
+
+# # Development Stage
+# FROM base-stage AS build-stage
+
+# # Copy the appropriate environment file for development
+# # COPY .env.development .env
+
+# ARG VITE_API_BASE_URL
+# ENV VITE_API_BASE_URL $VITE_API_BASE_URL
+
+# RUN npm run build
+
+# # Production Stage
+# FROM nginx:stable-alpine AS production-stage
+
+# # Copy the build output to Nginx's html directory
+# COPY --from=build-stage /app/build /usr/share/nginx/html
+
+# EXPOSE 5173
+
+
+# # Start Nginx server
+# CMD ["nginx", "-g", "daemon off;"]
 
 
 
