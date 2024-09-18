@@ -59,6 +59,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     restart: always
+    ports:
+      - "5432:5432"
     volumes:
       - ./postgres:/docker-entrypoint-initdb.d
       - ./postgres-data:/var/lib/postgresql/data
