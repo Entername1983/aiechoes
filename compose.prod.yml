@@ -48,7 +48,7 @@ services:
     environment:
       - VITE_API_BASE_URL=/api
     networks:
-      - frontend-network
+      - internal-network
 
   postgres_ai_echoes:
     env_file:
@@ -108,7 +108,6 @@ services:
       - backend
     networks:
       - internal-network
-      - frontend-network
 
 volumes:
   minio_data:
