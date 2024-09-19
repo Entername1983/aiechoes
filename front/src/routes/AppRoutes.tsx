@@ -1,7 +1,6 @@
 import { About } from "@source/pages/About";
 import { Contact } from "@source/pages/Contact";
 import { type ReactElement, useEffect } from "react";
-import React from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 
 import { Layout } from "../common/layouts/Layout";
@@ -11,6 +10,7 @@ const usePageTitle = (): void => {
   const defaultTitle = "AIEchoes";
 
   const location = useLocation();
+
   useEffect(() => {
     const pageTitleMap: Record<string, string> = {
       // Add index signature
@@ -49,6 +49,22 @@ const PublicRoutePaths = [
 ];
 
 const AppRoutes = (): ReactElement => {
+  const usePageTitle = (): void => {
+    const defaultTitle = "AIEchoes";
+
+    const location = useLocation();
+    useEffect(() => {
+      const pageTitleMap: Record<string, string> = {
+        "/": "AIEchoes",
+        "/about": "About - AIEchoes",
+        "/contact": "Contact - AIEchoes",
+        // Add more routes as needed
+      };
+
+      document.title = pageTitleMap[location.pathname] ?? defaultTitle;
+    }, [location]);
+  };
+
   usePageTitle();
   return (
     <Routes>
