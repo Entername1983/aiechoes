@@ -6,21 +6,6 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import { Layout } from "../common/layouts/Layout";
 import { Home } from "../pages/Home";
 
-const usePageTitle = (): void => {
-  const defaultTitle = "AIEchoes";
-
-  const location = useLocation();
-
-  useEffect(() => {
-    const pageTitleMap: Record<string, string> = {
-      // Add index signature
-      "/": "AIEchoes",
-    };
-
-    document.title = pageTitleMap[location.pathname] ?? defaultTitle;
-  }, [location]);
-};
-
 const PublicRoutePaths = [
   {
     path: "/",
