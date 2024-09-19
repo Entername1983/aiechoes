@@ -24,7 +24,7 @@ const Home: React.FC = () => {
 
   return (
     <div className=" ">
-      <div className="px-4 py-2">
+      <div className="px-2 py-1 md:px-4 md:py-2">
         <div className="flex pr-2 md:justify-between">
           <h1 className="hidden pl-10 pt-4 text-3xl text-ghostWhite md:block">
             {title}

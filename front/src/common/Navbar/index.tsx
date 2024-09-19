@@ -7,7 +7,7 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const [menuIsOpen, setMenuIsOpen] = React.useState(false);
   return (
-    <div className="flex  h-20 w-full justify-between bg-ghostWhite px-4">
+    <div className="flex h-20 w-full justify-between bg-ghostWhite px-4">
       <div
         className="flex cursor-pointer items-center justify-center gap-4"
         onClick={() => {
@@ -25,30 +25,38 @@ const Navbar: React.FC = () => {
       </div>
       <div className="flex items-center justify-center text-2xl">
         <div className="hidden md:block">
-          <button className="px-2 hover:text-paynesGray">About</button>
-          <button className="px-2 hover:text-paynesGray">Contact</button>
+          <a href="/about" className="px-2 hover:text-paynesGray">
+            About
+          </a>
+          <a href="/contact" className="px-2 hover:text-paynesGray">
+            Contact
+          </a>
         </div>
       </div>
-      <div className=" flex items-center justify-center md:hidden">
+      <div className="relative flex items-center justify-center md:hidden">
         <button
           className="size-8"
           onClick={() => {
             setMenuIsOpen(!menuIsOpen);
           }}
         >
-          <Bars3Icon className="relative fill-paynesGray hover:fill-lightblue" />
+          <Bars3Icon className="   fill-paynesGray hover:fill-lightblue" />
         </button>
         <div
-          className={`transition-duration-500 absolute right-5 top-[60px] transition ease-in-out ${
+          className={`transition-duration-500   absolute right-5 top-[60px] z-50 transition ease-in-out ${
             menuIsOpen ? "" : "hidden"
           }`}
         >
-          <div className="  flex  flex-col rounded-md border border-ghostWhite bg-paynesGray py-2 text-xl text-ghostWhite">
+          <div className=" flex  flex-col rounded-md border border-ghostWhite bg-paynesGray py-2 text-xl text-ghostWhite">
             <div className="px-2 hover:bg-charcoal">
-              <button className="hover:text-paynesGray">About</button>
+              <a href="/about" className="hover:text-paynesGray">
+                About
+              </a>
             </div>
             <div className="px-2 hover:bg-charcoal">
-              <button className="hover:text-paynesGray">Contact</button>
+              <a href="/contact" className="hover:text-paynesGray">
+                Contact
+              </a>
             </div>
           </div>
         </div>

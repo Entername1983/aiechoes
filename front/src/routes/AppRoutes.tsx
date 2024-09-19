@@ -1,6 +1,10 @@
-import { ReactElement, useEffect } from "react";
-import { Layout } from "../common/layouts/Layout";
+import { About } from "@source/pages/About";
+import { Contact } from "@source/pages/Contact";
+import { type ReactElement, useEffect } from "react";
+import React from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
+
+import { Layout } from "../common/layouts/Layout";
 import { Home } from "../pages/Home";
 
 const usePageTitle = (): void => {
@@ -23,6 +27,22 @@ const PublicRoutePaths = [
     element: (
       <Layout>
         <Home />
+      </Layout>
+    ),
+  },
+  {
+    path: "/about",
+    element: (
+      <Layout>
+        <About />
+      </Layout>
+    ),
+  },
+  {
+    path: "/contact",
+    element: (
+      <Layout>
+        <Contact />
       </Layout>
     ),
   },

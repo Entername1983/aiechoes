@@ -1,4 +1,5 @@
 import { ArrowDownIcon, ArrowUpIcon } from "@heroicons/react/16/solid";
+import { AnimatePresence, motion } from "framer-motion";
 import React from "react";
 
 import type { RepliesSchema } from "../../client";
@@ -28,12 +29,26 @@ const StoryBox: React.FC<StoryBoxProps> = ({
   return (
     <div className="  flex justify-center md:w-[90vw]  md:gap-4 md:p-2 ">
       <div className="relative  z-10 overflow-hidden rounded-2xl p-2 md:w-[85vw]">
-        <div className="max-h-[75vh] overflow-y-auto rounded-2xl px-2 ">
-          {batches.map((batch, index) => (
-            <div className=" py-2" key={index}>
-              <ReplyBatch batch={batch} />
-            </div>
-          ))}
+        <div className="max-h-[75vh] overflow-y-auto rounded-2xl px-1  md:px-2">
+          <AnimatePresence>
+            {batches.map((batch, index) => (
+              <motion.div
+                initial={{ opacity: 0, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 100 }}
+                transition={{
+                  delay: 0.1,
+                  ease: "easeOut",
+                }}
+                key={index}
+                className=" px-2"
+              >
+                <div className=" py-2">
+                  <ReplyBatch batch={batch} />
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
           <div ref={dummyRef}></div>
         </div>
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12">
@@ -50,9 +65,9 @@ const StoryBox: React.FC<StoryBoxProps> = ({
           disabled={!hasMore.prev}
         >
           <ArrowUpIcon
-            className={`size-8 fill-paynesGray  hover:fill-lightblue  ${
+            className={`size-6 fill-paynesGray hover:fill-lightblue  md:size-8  ${
               !hasMore.prev
-                ? "cursor-not-allowed fill-charcoal/10"
+                ? "hidden cursor-not-allowed"
                 : "cursor-pointer fill-paynesGray "
             }`}
           />
@@ -62,9 +77,9 @@ const StoryBox: React.FC<StoryBoxProps> = ({
           disabled={!hasMore.next}
         >
           <ArrowDownIcon
-            className={`size-8 fill-paynesGray  hover:fill-lightblue  ${
+            className={`size-6 fill-paynesGray hover:fill-lightblue  md:size-8  ${
               !hasMore.next
-                ? "cursor-not-allowed fill-charcoal/10"
+                ? "hidden cursor-not-allowed"
                 : "cursor-pointer fill-paynesGray "
             }`}
           />

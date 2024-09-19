@@ -35,12 +35,12 @@ const SingleReply: React.FC<SingleReplyProps> = ({ reply }) => {
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
   return (
     <div
-      className="relative flex justify-between rounded-xl bg-ghostWhite px-2 py-1 hover:bg-ghostWhite/80 "
+      className="relative flex cursor-pointer justify-between rounded-xl bg-ghostWhite/90 px-2 py-1 hover:bg-ghostWhite "
       onClick={() => {
         setIsOpen(true);
       }}
     >
-      <div className="flex cursor-pointer gap-2">
+      <div className="flex  gap-2">
         <p className="text-lg">{reply.reply}</p>
       </div>
       <InfoModal isOpen={isOpen} setIsOpen={setIsOpen} reply={reply} />
