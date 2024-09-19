@@ -33,15 +33,15 @@ export class RepliesService {
     /**
      * Get Replies For Story
      * @param storyId
-     * @param order
-     * @param requestBody
+     * @param order Order of replies: 'latest' or 'earliest'
+     * @param batchIds List of batch IDs
      * @returns RepliesResponse Successful Response
      * @throws ApiError
      */
     public static getRepliesForStory(
         storyId: number,
-        order: (string | null),
-        requestBody: Array<number>,
+        order?: (string | null),
+        batchIds?: Array<number>,
     ): CancelablePromise<RepliesResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -51,9 +51,8 @@ export class RepliesService {
             },
             query: {
                 'order': order,
+                'batch_ids': batchIds,
             },
-            body: requestBody,
-            mediaType: 'application/json',
             errors: {
                 422: `Validation Error`,
             },

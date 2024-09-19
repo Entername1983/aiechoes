@@ -6,18 +6,23 @@ import { ReplyBatch } from "./ReplyBatch";
 
 interface StoryBoxProps {
   batches: RepliesSchema[][];
-  loadPreviousBatches: () => void;
-  loadNextBatches: () => void;
-  loadPreviousIsDisabled: boolean;
-  loadNextIsDisabled: boolean;
+
+  actionHandlers: {
+    loadOnceUponATime: () => Promise<void>;
+    loadTheStorySoFar: () => Promise<void>;
+    loadPreviousBatches: () => Promise<void>;
+    loadNextBatches: () => Promise<void>;
+  };
+  hasMore: {
+    next: boolean;
+    prev: boolean;
+  };
   dummyRef: React.RefObject<HTMLDivElement>;
 }
 const StoryBox: React.FC<StoryBoxProps> = ({
   batches,
-  loadPreviousBatches,
-  loadNextBatches,
-  loadPreviousIsDisabled,
-  loadNextIsDisabled,
+  actionHandlers,
+  hasMore,
   dummyRef,
 }) => {
   return (
@@ -40,19 +45,25 @@ const StoryBox: React.FC<StoryBoxProps> = ({
       </div>
 
       <div className=" flex flex-col justify-between py-4">
-        <button onClick={loadPreviousBatches} disabled={loadPreviousIsDisabled}>
+        <button
+          onClick={actionHandlers.loadPreviousBatches}
+          disabled={!hasMore.prev}
+        >
           <ArrowUpIcon
             className={`size-8 fill-paynesGray  hover:fill-lightblue  ${
-              loadPreviousIsDisabled
+              !hasMore.prev
                 ? "cursor-not-allowed fill-charcoal/10"
                 : "cursor-pointer fill-paynesGray "
             }`}
           />
         </button>
-        <button onClick={loadNextBatches} disabled={loadNextIsDisabled}>
+        <button
+          onClick={actionHandlers.loadNextBatches}
+          disabled={!hasMore.next}
+        >
           <ArrowDownIcon
             className={`size-8 fill-paynesGray  hover:fill-lightblue  ${
-              loadNextIsDisabled
+              !hasMore.next
                 ? "cursor-not-allowed fill-charcoal/10"
                 : "cursor-pointer fill-paynesGray "
             }`}

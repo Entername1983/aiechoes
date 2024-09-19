@@ -12,6 +12,9 @@ COPY ./ /code
 # Development Stage
 FROM base-stage AS dev-stage
 
+
+ARG VITE_BACKEND_URL
+ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
 # Copy the appropriate environment file for development
 # COPY .env.development .env
 

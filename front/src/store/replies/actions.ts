@@ -16,7 +16,25 @@ export const fetchReplies = createAsyncThunk(
       data.order,
       data.batchIds
     );
-    return res.repliesList;
+    return {
+      replies: res.repliesList,
+      hasMoreNext: res.hasMoreNext,
+      hasMorePrev: res.hasMorePrev,
+    };
+  }
+);
+
+
+export const setDirection = createAsyncThunk(
+  "replies/setDirection",
+  async (direction: "latest" | "earliest") => {
+    return direction;
+  }
+);
+export const setStoryId = createAsyncThunk(
+  "replies/setStoryId",
+  async (storyId: number) => {
+    return storyId;
   }
 );
 

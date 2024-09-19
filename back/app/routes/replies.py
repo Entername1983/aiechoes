@@ -1,5 +1,7 @@
-from fastapi import APIRouter, HTTPException
-from sqlalchemy import desc, select
+from typing import Optional
+
+from fastapi import APIRouter, HTTPException, Query
+from sqlalchemy import desc, func, select
 
 from app.dependencies.db import GetDb
 from app.models.images import Images
@@ -64,21 +66,25 @@ async def get_replies(db: GetDb, batch_offset: int = 0, qty_batches: int = 2) ->
 async def get_replies_for_story(
     db: GetDb,
     story_id: int,
-    order: str | None,
-    batch_ids: list[int],
+    order: Optional[str] = Query(None, description="Order of replies: 'latest' or 'earliest'"),
+    batch_ids: list[int] = Query(None, description="List of batch IDs"),
 ) -> dict:
+    if batch_ids:
+        return await return_batch_ids(db, story_id, batch_ids)
     if order == "latest":
         return await return_latest_replies(db, story_id)
     if order == "earliest":
         return await return_earliest_replies(db, story_id)
-    if order is None:
-        return await return_batch_ids(db, story_id, batch_ids)
+
     raise HTTPException(status_code=400, detail="Invalid order parameter")
 
 
 async def return_earliest_replies(db: GetDb, story_id: int) -> dict:
     query = (
-        select(Replies).filter(Replies.story_id == story_id).order_by(Replies.time_created).limit(2)
+        select(Replies)
+        .filter(Replies.story_id == story_id)
+        .order_by(Replies.time_created)
+        .limit(10)
     )
     result = await db.execute(query)
     replies = result.scalars().all()
@@ -90,11 +96,18 @@ async def return_earliest_replies(db: GetDb, story_id: int) -> dict:
 
 
 async def return_latest_replies(db: GetDb, story_id: int) -> dict:
+    subquery = (
+        select(Replies.batch_id)
+        .filter(Replies.story_id == story_id)
+        .group_by(Replies.batch_id)
+        .order_by(desc(func.max(Replies.time_created)))
+        .limit(2)
+        .scalar_subquery()
+    )
     query = (
         select(Replies)
-        .filter(Replies.story_id == story_id)
+        .filter(Replies.story_id == story_id, Replies.batch_id.in_(subquery))
         .order_by(desc(Replies.time_created))
-        .limit(2)
     )
     result = await db.execute(query)
     replies = result.scalars().all()
