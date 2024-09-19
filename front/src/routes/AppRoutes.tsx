@@ -35,14 +35,14 @@ const PublicRoutePaths = [
 
 const AppRoutes = (): ReactElement => {
   const usePageTitle = (): void => {
-    const defaultTitle = "AIEchoes";
+    const defaultTitle = "AI Story";
 
     const location = useLocation();
     useEffect(() => {
       const pageTitleMap: Record<string, string> = {
-        "/": "AIEchoes",
-        "/about": "About - AIEchoes",
-        "/contact": "Contact - AIEchoes",
+        "/": "Ai Story",
+        "/about": "About - AI Story",
+        "/contact": "Contact - AI Story",
         // Add more routes as needed
       };
 
