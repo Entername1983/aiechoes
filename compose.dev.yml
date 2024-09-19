@@ -18,8 +18,8 @@ services:
     build:
       context: ./back
       dockerfile: Dockerfile.dev
-    # ports:
-    #   - "5000:8000"
+    ports:
+      - "5000:8000"
     volumes:
       - ./back:/code
     environment:
@@ -29,8 +29,6 @@ services:
       - DEBUG=1
     command: uvicorn app.main:app --host 0.0.0.0 --reload
     restart: unless-stopped
-    # env_file:
-    #   - ./back/app/.env
     env_file:
       - ./.env
     networks:
@@ -45,8 +43,6 @@ services:
     build:
       context: ./back
       dockerfile: docker/Dockerfile.storyteller
-    # ports:
-    #   - "5001:8001"
     restart: unless-stopped
     env_file:
       - ./.env
@@ -69,8 +65,6 @@ services:
     environment:
       - VITE_API_BASE_URL=/api
       - CHOKIDAR_USEPOLLING=true
-    # ports:
-    #   - 5173:5173
     networks:
       - internal-network
 

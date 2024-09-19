@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.config.db import Base
@@ -18,6 +18,7 @@ class Replies(Base):
     version: Mapped[str] = mapped_column(String(50), nullable=False)
     batch_id: Mapped[int] = mapped_column(Integer, nullable=False)
     number_in_batch: Mapped[int] = mapped_column(Integer, nullable=False)
+    story_id: Mapped[int] = mapped_column(ForeignKey("stories.id"), nullable=False)
 
     def to_dict(self) -> dict:
         return {
@@ -30,4 +31,5 @@ class Replies(Base):
             "version": self.version if self.version else "not specified",
             "batch_id": self.batch_id,
             "number_in_batch": self.number_in_batch,
+            "story_id": self.story_id,
         }

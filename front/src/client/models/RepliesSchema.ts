@@ -10,5 +10,6 @@ export type RepliesSchema = {
     reply: string;
     batchId: number;
     numberInBatch: number;
+    storyId: number;
 };
 

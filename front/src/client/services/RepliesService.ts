@@ -30,4 +30,33 @@ export class RepliesService {
             },
         });
     }
+    /**
+     * Get Replies For Story
+     * @param storyId
+     * @param order
+     * @param requestBody
+     * @returns RepliesResponse Successful Response
+     * @throws ApiError
+     */
+    public static getRepliesForStory(
+        storyId: number,
+        order: (string | null),
+        requestBody: Array<number>,
+    ): CancelablePromise<RepliesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/replies/{story_id}',
+            path: {
+                'story_id': storyId,
+            },
+            query: {
+                'order': order,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
 }

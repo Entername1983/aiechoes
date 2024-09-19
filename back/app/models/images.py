@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.config.db import Base
@@ -18,3 +18,16 @@ class Images(Base):
         DateTime,
         default=lambda: datetime.now(),
     )
+    story_id: Mapped[int] = mapped_column(ForeignKey("stories.id"), nullable=False)
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "batch_id": self.batch_id,
+            "title": self.title,
+            "image_url": self.image_url,
+            "thumbnail_url": self.thumbnail_url,
+            "img_model": self.img_model,
+            "time_created": self.time_created,
+            "story_id": self.story_id,
+        }

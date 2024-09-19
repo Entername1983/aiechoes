@@ -11,7 +11,7 @@ export class DefaultService {
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static root(): CancelablePromise<any> {
+    public static root(): CancelablePromise<Record<string, any>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/',
@@ -22,7 +22,7 @@ export class DefaultService {
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static healthcheck(): CancelablePromise<any> {
+    public static healthcheck(): CancelablePromise<Record<string, any>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/healthcheck',

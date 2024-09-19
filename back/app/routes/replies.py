@@ -8,6 +8,7 @@ from app.s3.storage_manager import StorageManager
 from app.schemas.replies import PreSignedUrlResponse, RepliesResponse
 
 replies_router = APIRouter()
+NUMBER_OF_REPLIES_IN_2_BATCHES = 10
 
 
 async def get_replies_from_db(
@@ -54,6 +55,74 @@ async def get_replies(db: GetDb, batch_offset: int = 0, qty_batches: int = 2) ->
     replies = await get_next_two_batches_of_replies_from_db(db, batch_offset, qty_batches)
     list_replies = [reply.to_dict() for reply in replies]
     return {"replies_list": list_replies}
+
+
+## get replies, params: story_id, latest or earliest, batch_ids,
+
+
+@replies_router.get("/replies/{story_id}", response_model=RepliesResponse, tags=["replies"])
+async def get_replies_for_story(
+    db: GetDb,
+    story_id: int,
+    order: str | None,
+    batch_ids: list[int],
+) -> dict:
+    if order == "latest":
+        return await return_latest_replies(db, story_id)
+    if order == "earliest":
+        return await return_earliest_replies(db, story_id)
+    if order is None:
+        return await return_batch_ids(db, story_id, batch_ids)
+    raise HTTPException(status_code=400, detail="Invalid order parameter")
+
+
+async def return_earliest_replies(db: GetDb, story_id: int) -> dict:
+    query = (
+        select(Replies).filter(Replies.story_id == story_id).order_by(Replies.time_created).limit(2)
+    )
+    result = await db.execute(query)
+    replies = result.scalars().all()
+    return {
+        "replies_list": [reply.to_dict() for reply in replies],
+        "has_more_prev": False,
+        "has_more_next": True,
+    }
+
+
+async def return_latest_replies(db: GetDb, story_id: int) -> dict:
+    query = (
+        select(Replies)
+        .filter(Replies.story_id == story_id)
+        .order_by(desc(Replies.time_created))
+        .limit(2)
+    )
+    result = await db.execute(query)
+    replies = result.scalars().all()
+    return {
+        "replies_list": [reply.to_dict() for reply in replies],
+        "has_more_prev": True,
+        "has_more_next": False,
+    }
+
+
+async def return_batch_ids(db: GetDb, story_id: int, batch_ids: list[int]) -> dict:
+    ## get replies for batch_ids
+    query = (
+        select(Replies).filter(Replies.story_id == story_id).filter(Replies.batch_id.in_(batch_ids))
+    )
+    result = await db.execute(query)
+    replies = result.scalars().all()
+    has_more_prev = True
+    has_more_next = True
+    if len(replies) < NUMBER_OF_REPLIES_IN_2_BATCHES:
+        has_more_next = False
+    if 0 in batch_ids:
+        has_more_prev = False
+    return {
+        "replies_list": [reply.to_dict() for reply in replies],
+        "has_more_prev": has_more_prev,
+        "has_more_next": has_more_next,
+    }
 
 
 @replies_router.get("/image", response_model=PreSignedUrlResponse, tags=["image"])

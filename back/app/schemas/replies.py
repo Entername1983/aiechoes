@@ -12,6 +12,7 @@ class RepliesSchema(BaseModel):
     reply: str
     batch_id: int
     number_in_batch: int
+    story_id: int
 
 
 class ImagesSchema(BaseModel):
@@ -23,6 +24,7 @@ class ImagesSchema(BaseModel):
     thumbnail_url: str
     img_model: str
     time_created: str
+    story_id: int
 
 
 class SimpleImagesSchema(BaseModel):
@@ -39,3 +41,20 @@ class PreSignedUrlResponse(BaseModel):
 class RepliesResponse(BaseModel):
     model_config = config
     replies_list: list[RepliesSchema]
+    has_more_next: bool
+    has_more_prev: bool
+
+
+class StoriesSchema(BaseModel):
+    model_config = config
+    id: int
+    title: str
+    live: bool
+    story_type: str
+
+
+class StoryContextsSchema(BaseModel):
+    model_config = config
+    id: int
+    story_id: int
+    context: dict
