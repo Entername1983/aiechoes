@@ -63,7 +63,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
                     setIsOpen(false);
                   }}
                   className={
-                    "hover:fill-tolopea absolute right-[20px] top-[20px] z-[9999] hidden size-[14px] cursor-pointer fill-gray-500 hover:text-white hover:dark:fill-white sm:block"
+                    "hover:fill-tolopea absolute right-[20px] top-[20px] z-[9999]  size-[14px] cursor-pointer fill-gray-500 hover:text-white hover:dark:fill-white sm:block"
                   }
                 />
                 <div className="text-tolopea mx-auto flex h-screen w-screen items-center justify-center dark:text-white sm:size-full">

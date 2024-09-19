@@ -16,7 +16,7 @@ const ButtonMain: React.FC<ButtonMainProps> = ({
   return (
     <button
       type={type}
-      className={`rounded-xl  border-2 border-lightblue bg-charcoal px-4 py-2 text-center text-xl hover:bg-paynesGray hover:text-ghostWhite
+      className={`rounded-xl  border-2 border-lightblue bg-charcoal px-4 py-2 text-center text-sm hover:scale-105 hover:bg-paynesGray hover:text-ghostWhite md:text-xl
         
         ${
           disabled

@@ -25,9 +25,11 @@ const Home: React.FC = () => {
   return (
     <div className=" ">
       <div className="px-4 py-2">
-        <div className="flex justify-between pr-2">
-          <h1 className="pl-10 pt-4 text-3xl text-ghostWhite">{title}</h1>
-          <div className="flex flex-col gap-2 md:flex">
+        <div className="flex pr-2 md:justify-between">
+          <h1 className="hidden pl-10 pt-4 text-3xl text-ghostWhite md:block">
+            {title}
+          </h1>
+          <div className=" flex gap-2 ">
             {" "}
             <ButtonMain
               disabled={direction === "earliest"}
