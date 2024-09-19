@@ -38,6 +38,8 @@ services:
     build:
       context: ./front
       dockerfile: Dockerfile.prod
+      args:
+        VITE_BACKEND_URL: /api/
     volumes:
       - /code/node_modules
       - ./front/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
