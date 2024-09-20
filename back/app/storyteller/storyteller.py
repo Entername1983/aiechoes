@@ -1,6 +1,5 @@
 import asyncio
 import json
-import logging
 from datetime import datetime, timezone
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -8,6 +7,7 @@ from apscheduler.triggers.cron import CronTrigger
 
 from app.dependencies.settings import get_settings
 from app.storyteller.ai_replies import AiReplies
+from app.utils.loggers import story_logger as log
 
 settings = get_settings()
 ai_replies = AiReplies(settings.story.available_llms)
@@ -19,16 +19,13 @@ async def job_function() -> None:
     await ai_replies.start()
 
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()],
-)
-log = logging.getLogger("Storyteller")
-
 scheduler = AsyncIOScheduler()
 
-trigger = CronTrigger(minute=settings.story.interval_min)
+
+if settings.app.environment == "development":
+    trigger = CronTrigger(second=30)
+else:
+    trigger = CronTrigger(minute=settings.story.interval_min)
 
 
 scheduler.add_job(job_function, trigger)
@@ -41,6 +38,7 @@ settings_dict = settings.model_dump()
 
 async def main() -> None:
     log.info("-----------------Starting Storyteller-----------------")
+
     log.info(json.dumps(settings.model_dump(), indent=4))
     scheduler.start()
     await asyncio.Event().wait()

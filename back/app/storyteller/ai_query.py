@@ -55,6 +55,31 @@ class AiQuery:
             raise CallAiExceptions.NoResponseError("OpenAI call Response is None")
         return response
 
+    async def query_gpt_general(
+        self,
+        assistant_content: str,
+        sys_content: str = "You are playing a game of exquisite corpse",
+    ) -> str:
+        openai = AsyncOpenAI(api_key=self.settings.open_ai.openai_api_key)
+        response = await openai.chat.completions.create(
+            model=self.settings.open_ai.main_model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": sys_content,
+                },
+                {"role": "assistant", "content": assistant_content},
+            ],
+            max_tokens=self.settings.open_ai.max_tokens,
+            top_p=self.settings.temperature,
+            frequency_penalty=self.settings.frequency_penalty,
+            presence_penalty=self.settings.presence_penalty,
+        )
+        response = response.choices[0].message.content
+        if response is None:
+            raise CallAiExceptions.NoResponseError("OpenAI call Response is None")
+        return response
+
     async def query_gemini(self) -> str:
         genai.configure(api_key=self.settings.gemini.gemini_api_key)
         model = genai.GenerativeModel(self.settings.gemini.main_model)

@@ -14,15 +14,20 @@ from sqlalchemy.ext.asyncio import (
 
 from app.dependencies.settings import get_settings
 from app.exceptions.CallAiExceptions import CallAiExceptions
-from app.models.images import Images
-from app.models.replies import Replies
+from app.models.models import Images, Replies
+from app.models.story_context import StoryContexts
 from app.s3.storage_manager import StorageManager
 from app.storyteller.ai_query import AiQuery
+from app.storyteller.data import INITIAL_CONTEXT
+from app.storyteller.story_context_manager import StoryContextManager
+from app.storyteller.storyteller_schemas import StoryContext
 from app.utils.log_decorators import log_deco
+from app.utils.loggers import story_logger as log
 
 # from config.db import async_session as session_factory
 
 BATCH_SIZE = 5
+MAX_IMAGE_PROMPT_LENGTH = 1000
 NUMBER_OF_REPLIES_TO_USE_FOR_PROMPT = 5
 MAX_REPLY_LENGTH = 512  # max length of reply that can be stored in db
 logger = logging.getLogger("App")
@@ -43,11 +48,12 @@ session_factory = async_sessionmaker(
 
 
 class AiReplies:
-    def __init__(self, available_llms: list):
+    def __init__(self, available_llms: list, story_id: int = 2):
+        self.story_id: int = story_id
         self.current_llm_index: int = 0  ## current llm to use for round
-        self.prev_reply: Replies | None = (
-            None  ## previous reply from llm to be used to prompt new llm
-        )
+        # self.prev_reply: Replies | None = (
+        #     None  ## previous reply from llm to be used to prompt new llm
+        # )
         self.prompt: str | None = None
         self.new_reply: str | None = None  ## new reply from llm
         self.llms_in_round: list[
@@ -78,20 +84,30 @@ class AiReplies:
 
     @log_deco
     async def create_prompt(self) -> None:
+        story_context = self.context_manager.create_context_description()
         if self.prev_replies_string is None:
             raise CallAiExceptions.NoPreviousReplyError
-        self.prompt = f"""You are playing a game of exquisite corpse. The previous 5 sentences
+        self.prompt = f"""This is the current context of a story in progress:\n {story_context}\n
+        You are tasked with writting the next sentence in a story. The previous 5 sentences
         written by players are:\n
         {self.prev_replies_string}.\n Please write the next sentence to continue the story.
         Only reply with the next sentence you would like to add to the story.
         Do not include any markdown or formatting or anything other than the
         sentence that continues the story. You must not reply with anything other than the next
         sentence."""
+        log.info("Prompt created", self.prompt)
 
     def check_if_reply_is_too_long_and_fix(self) -> None:
         if self.new_reply and len(self.new_reply) > MAX_REPLY_LENGTH:
             split_reply = self.new_reply.split(".")
             self.new_reply = split_reply[0] + "."
+
+    def check_if_prompt_is_too_long_and_fix_it(self) -> None:
+        log.info("Prompt length: %s", len(self.image_prompt))
+        if self.image_prompt and len(self.image_prompt) > MAX_IMAGE_PROMPT_LENGTH:
+            split_prompt = self.image_prompt.split(".")
+            self.image_prompt = split_prompt[0] + "."
+            log.info("removed extra text from prompt %s", self.image_prompt)
 
     @log_deco
     async def update_db_with_new_reply(self) -> None:
@@ -108,6 +124,7 @@ class AiReplies:
             version=model_version_used,
             batch_id=self.batch_id,
             number_in_batch=self.number_in_batch,
+            story_id=self.story_id,
         )
         async with session_factory() as session:
             try:
@@ -123,6 +140,7 @@ class AiReplies:
             batch_id=self.batch_id,
             img_model=self.settings.open_ai.image_model,
             title=self.img_name,
+            story_id=self.story_id,
         )
         async with session_factory() as session:
             session.add(new_image)
@@ -133,31 +151,51 @@ class AiReplies:
             len(self.available_llms) if self.current_llm_index == 0 else self.current_llm_index - 1
         )
 
+    # TODO: select store which llms have been used in a db so
+    # that we can use all llms before repeating
     @log_deco
     async def start(self) -> None:
-        print("starting")
         await self.select_llm()
-        reply_list = await self.retrieve_latest_n_db_entries()
-        self.prev_reply = reply_list[0] if reply_list else None
         self.prev_replies = await self.retrieve_latest_n_db_entries(
             NUMBER_OF_REPLIES_TO_USE_FOR_PROMPT,
         )
-        if self.prev_reply is None:
+        db_context_response = await self.retrieve_current_context()
+        if db_context_response is None:
+            db_context_response = await self.create_initial_context()
+        self.context_manager = StoryContextManager(StoryContext(**db_context_response.context))
+        if self.prev_replies is None:
             await self.create_initial_prompt()
-
         else:
-            if self.prev_replies is None:
-                raise CallAiExceptions.NoPreviousReplyError("No previous replies found")
             self.prev_replies_string = "".join([reply.reply for reply in self.prev_replies])
             await self.create_prompt()
         await self.get_new_reply()
         self.update_batch_info()
+        await self.add_image_to_story()
+        await self.update_db_with_new_reply()
+
+    async def retrieve_current_context(self) -> StoryContexts:
+        async with session_factory() as session:
+            result = await session.execute(
+                select(StoryContexts)
+                .filter(StoryContexts.story_id == self.story_id)
+                .order_by(desc(StoryContexts.id))
+                .limit(1),
+            )
+            return result.scalars().first()
+
+    async def create_initial_context(self) -> StoryContexts:
+        new_context = StoryContexts(story_id=self.story_id, context=INITIAL_CONTEXT)
+        async with session_factory() as session:
+            session.add(new_context)
+            await session.commit()
+        return new_context
+
+    async def add_image_to_story(self) -> None:
         if self.number_in_batch == BATCH_SIZE:
             self.create_image_prompt()
             await self.generate_image()
             await self.save_image_to_s3()
             await self.update_db_with_new_image()
-        await self.update_db_with_new_reply()
 
     async def generate_image(self) -> None:
         ai_query = AiQuery(self.current_llm, self.image_prompt)
@@ -176,17 +214,18 @@ class AiReplies:
     def create_image_prompt(self) -> None:
         self.image_prompt = f""" You are a storybook illustrator.  Create an illustration for the
         following passage: {self.prev_replies_string}"""
+        self.check_if_prompt_is_too_long_and_fix_it()
 
     def update_batch_info(self) -> None:
-        if self.prev_reply is not None:
+        if len(self.prev_replies) > 0 and self.prev_replies[-1] is not None:
             self.batch_id = (
-                self.prev_reply.batch_id + 1
-                if self.prev_reply.number_in_batch == BATCH_SIZE
-                else self.prev_reply.batch_id
+                self.prev_replies[-1].batch_id + 1
+                if self.prev_replies[-1].number_in_batch == BATCH_SIZE
+                else self.prev_replies[-1].batch_id
             )
             self.number_in_batch = (
-                self.prev_reply.number_in_batch + 1
-                if self.prev_reply.number_in_batch < BATCH_SIZE
+                self.prev_replies[-1].number_in_batch + 1
+                if self.prev_replies[-1].number_in_batch < BATCH_SIZE
                 else 1
             )
         else:
@@ -197,7 +236,10 @@ class AiReplies:
     async def retrieve_latest_n_db_entries(self, qty_replies: int = 1) -> list[Replies]:
         async with session_factory() as session:
             result = await session.execute(
-                select(Replies).order_by(desc(Replies.time_created)).limit(qty_replies),
+                select(Replies)
+                .filter(Replies.story_id == self.story_id)
+                .order_by(desc(Replies.time_created))
+                .limit(qty_replies),
             )
             return list(result.scalars().all())
 
