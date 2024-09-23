@@ -10,12 +10,11 @@ from app.storyteller.ai_replies import AiReplies
 from app.utils.loggers import story_logger as log
 
 settings = get_settings()
-ai_replies = AiReplies(settings.story.available_llms)
+ai_replies = AiReplies(settings.story.available_llms, 2)
 
 
 async def job_function() -> None:
-    current_time = datetime.now(timezone.utc)
-    print(f"Job executed at {current_time} UTC")  # noqa: T201
+    log.info("Job executed at %s UTC", datetime.now(timezone.utc))
     await ai_replies.start()
 
 

@@ -1,13 +1,15 @@
-from typing import Union
+from typing import Type, Union
 
 import google.generativeai as genai
 import replicate
 import replicate.client
 from anthropic import AsyncAnthropic
-from mistralai import Mistral, UserMessage
+from mistralai import Mistral, ResponseFormat, UserMessage
 from openai import (
     AsyncOpenAI,
+    NotGiven,
 )
+from pydantic import BaseModel
 
 from app.dependencies.settings import get_settings
 from app.exceptions.CallAiExceptions import CallAiExceptions
@@ -55,30 +57,30 @@ class AiQuery:
             raise CallAiExceptions.NoResponseError("OpenAI call Response is None")
         return response
 
+    ## need to get message.parsed
     async def query_gpt_general(
         self,
         assistant_content: str,
         sys_content: str = "You are playing a game of exquisite corpse",
-    ) -> str:
+        response_format: Union[ResponseFormat, Type[BaseModel], None] = None,
+    ):
         openai = AsyncOpenAI(api_key=self.settings.open_ai.openai_api_key)
-        response = await openai.chat.completions.create(
-            model=self.settings.open_ai.main_model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": sys_content,
-                },
+        api_params = {
+            "model": self.settings.open_ai.main_model,
+            "messages": [
+                {"role": "system", "content": sys_content},
                 {"role": "assistant", "content": assistant_content},
             ],
-            max_tokens=self.settings.open_ai.max_tokens,
-            top_p=self.settings.temperature,
-            frequency_penalty=self.settings.frequency_penalty,
-            presence_penalty=self.settings.presence_penalty,
-        )
-        response = response.choices[0].message.content
-        if response is None:
-            raise CallAiExceptions.NoResponseError("OpenAI call Response is None")
-        return response
+            "max_tokens": self.settings.open_ai.max_tokens,
+            "top_p": self.settings.temperature,
+            "frequency_penalty": self.settings.frequency_penalty,
+            "presence_penalty": self.settings.presence_penalty,
+        }
+        if response_format is not None:
+            api_params["response_format"] = response_format
+        else:
+            api_params["response_format"] = NotGiven
+        return await openai.chat.completions.create(**api_params)
 
     async def query_gemini(self) -> str:
         genai.configure(api_key=self.settings.gemini.gemini_api_key)

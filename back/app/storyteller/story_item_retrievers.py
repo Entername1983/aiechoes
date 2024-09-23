@@ -1,0 +1,128 @@
+from app.storyteller.storyteller_schemas import (
+    Character,
+    CharacterNameAndId,
+    CurrentContext,
+    Narrator,
+    PlotPoint,
+    Rules,
+    StoryContext,
+)
+
+
+class StoryItemRetrievers:
+    @staticmethod
+    def retrieve_list_of_all_characters_in_story(context: StoryContext) -> list[CharacterNameAndId]:
+        characters_list = []
+        for character in context.characters.mainCharacters:
+            name_and_id = {"characterId": character.id, "name": character.firstName}
+            char_to_append = CharacterNameAndId(**name_and_id)
+            characters_list.append(char_to_append)
+        for character in context.characters.secondaryCharacters:
+            name_and_id = {"characterId": character.id, "name": character.firstName}
+            char_to_append = CharacterNameAndId(**name_and_id)
+            characters_list.append(char_to_append)
+        return characters_list
+
+    @staticmethod
+    def retrieve_main_character_data(context: StoryContext, character_id: str) -> Character | None:
+        return next(
+            (char for char in context.characters.mainCharacters if char.id == character_id),
+            None,
+        )
+
+    @staticmethod
+    def retrieve_secondary_character_data(
+        context: StoryContext,
+        character_id: str,
+    ) -> Character | None:
+        return next(
+            (char for char in context.characters.secondaryCharacters if char.id == character_id),
+            None,
+        )
+
+    @staticmethod
+    def retrieve_main_plot_point_data(context: StoryContext, plot_id: str) -> PlotPoint | None:
+        return next(
+            (plot for plot in context.mainPlots if plot.id == plot_id),
+            None,
+        )
+
+    @staticmethod
+    def retrieve_secondary_plot_point_data(
+        context: StoryContext,
+        plot_id: str,
+    ) -> PlotPoint | None:
+        return next(
+            (plot for plot in context.subPlots if plot.id == plot_id),
+            None,
+        )
+
+    @staticmethod
+    def retrieve_rules(context: StoryContext) -> Rules:
+        return context.rules
+
+    @staticmethod
+    def retrieve_themes(context: StoryContext) -> list[str]:
+        return context.themes
+
+    @staticmethod
+    def retrieve_narrator_data(context: StoryContext, narrator_id: str) -> Narrator | None:
+        return next(
+            (narrator for narrator in context.narration if narrator.id == narrator_id),
+            None,
+        )
+
+    @staticmethod
+    def retrieve_current_context(context: StoryContext) -> CurrentContext:
+        return context.currentContext
+
+
+class StoryItemUpdater:
+    @staticmethod
+    def remove_character_from_current_context(
+        context: StoryContext,
+        character_id: str,
+    ) -> CurrentContext:
+        context.currentContext.charactersPresent = [
+            character
+            for character in context.currentContext.charactersPresent
+            if character.characterId != character_id
+        ]
+        return context.currentContext
+
+    @staticmethod
+    def add_character_to_current_context(
+        context: StoryContext,
+        character: Character,
+    ) -> CurrentContext:
+        name_and_id = {"characterId": character.id, "name": character.firstName}
+        char_to_append = CharacterNameAndId(**name_and_id)
+        context.currentContext.charactersPresent.append(
+            char_to_append,
+        )
+        return context.currentContext
+
+    @staticmethod
+    def add_new_character_to_context(
+        context: StoryContext,
+        character: Character,
+        main_or_secondary: str = "main",
+    ) -> StoryContext:
+        if main_or_secondary == "main":
+            context.characters.mainCharacters.append(character)
+        else:
+            context.characters.secondaryCharacters.append(character)
+        return context
+
+    @staticmethod
+    def update_existing_character_in_context(
+        context: StoryContext,
+        character: Character,
+    ) -> StoryContext:
+        if character in context.characters.mainCharacters:
+            context.characters.mainCharacters.remove(character)
+            context.characters.mainCharacters.append(character)
+        else:
+            context.characters.secondaryCharacters.remove(character)
+            context.characters.secondaryCharacters.append(character)
+        return context

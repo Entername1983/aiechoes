@@ -14,6 +14,7 @@ INITIAL_CONTEXT = {
             ],
             "locations": [
                 {
+                    "locationId": "L1",
                     "name": "St. John's, Newfoundland",
                     "description": "A coastal city with a rich history.",
                     "significance": "John's hometown and starting point of the adventure.",
@@ -21,6 +22,7 @@ INITIAL_CONTEXT = {
                     "history": ["Founded in 1497", "Survived the Great Fire of 1892"],
                 },
                 {
+                    "locationId": "L2",
                     "name": "The Old Lighthouse",
                     "description": "An abandoned lighthouse rumored to be haunted.",
                     "significance": "Key location where the first clue is found.",
@@ -166,9 +168,16 @@ INITIAL_CONTEXT = {
         },
         "currentContext": {
             "time": "2023-01-10 23:50",
-            "location": "Entrance of the Old Lighthouse",
+            "location": {
+                "locationId": "l2",
+                "name": "The Old lighthouse",
+                "details": "At the entrance",
+            },
             "weather": "Foggy with a slight drizzle",
-            "charactersPresent": ["C1", "C2"],
+            "charactersPresent": [
+                {"characterId": "C1", "name": "John Smith"},
+                {"characterId": "C3", "name": "Robert Smith"},
+            ],
             "summary": "John and Emily stand before the looming structure of the Old Lighthouse, preparing to enter and search for clues.",
             "emotionalStates": {
                 "C1": "Anxious but excited",

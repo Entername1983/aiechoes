@@ -48,12 +48,9 @@ session_factory = async_sessionmaker(
 
 
 class AiReplies:
-    def __init__(self, available_llms: list, story_id: int = 2):
+    def __init__(self, available_llms: list, story_id: int):
         self.story_id: int = story_id
         self.current_llm_index: int = 0  ## current llm to use for round
-        # self.prev_reply: Replies | None = (
-        #     None  ## previous reply from llm to be used to prompt new llm
-        # )
         self.prompt: str | None = None
         self.new_reply: str | None = None  ## new reply from llm
         self.llms_in_round: list[
@@ -61,7 +58,6 @@ class AiReplies:
         ] = []  ## keep track of which llms have been queried in current round
         self.available_llms: list[str] = available_llms  ## list of all available llms
         self.settings = get_settings().ai
-
         self.model_versions_dict: dict = {
             "llama": self.settings.llama.main_model,
             "gpt": self.settings.open_ai.main_model,
@@ -162,7 +158,7 @@ class AiReplies:
         db_context_response = await self.retrieve_current_context()
         if db_context_response is None:
             db_context_response = await self.create_initial_context()
-        self.context_manager = StoryContextManager(StoryContext(**db_context_response.context))
+        self.context_manager = StoryContextManager(StoryContext(**db_context_response.context), "")
         if self.prev_replies is None:
             await self.create_initial_prompt()
         else:
