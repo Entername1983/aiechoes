@@ -10,6 +10,8 @@ class Stories(Base):
     title: Mapped[str] = mapped_column(String(128), nullable=False)
     live: Mapped[bool] = mapped_column(Boolean, nullable=True)
     story_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    ## ec = excquisite corpse
+    ## wc = with context
 
     def to_dict(self) -> dict:
         return {

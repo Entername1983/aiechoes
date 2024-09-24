@@ -13,64 +13,74 @@ class StoryItemRetrievers:
     @staticmethod
     def retrieve_list_of_all_characters_in_story(context: StoryContext) -> list[CharacterNameAndId]:
         characters_list = []
-        for character in context.characters.mainCharacters:
-            name_and_id = {"characterId": character.id, "name": character.firstName}
-            char_to_append = CharacterNameAndId(**name_and_id)
-            characters_list.append(char_to_append)
-        for character in context.characters.secondaryCharacters:
-            name_and_id = {"characterId": character.id, "name": character.firstName}
-            char_to_append = CharacterNameAndId(**name_and_id)
-            characters_list.append(char_to_append)
+        if context.characters and context.characters.mainCharacters:
+            for character in context.characters.mainCharacters:
+                name_and_id = {"characterId": character.id, "name": character.firstName}
+                char_to_append = CharacterNameAndId(**name_and_id)
+                characters_list.append(char_to_append)
+        if context.characters and context.characters.secondaryCharacters:
+            for character in context.characters.secondaryCharacters:
+                name_and_id = {"characterId": character.id, "name": character.firstName}
+                char_to_append = CharacterNameAndId(**name_and_id)
+                characters_list.append(char_to_append)
         return characters_list
 
     @staticmethod
     def retrieve_main_character_data(context: StoryContext, character_id: str) -> Character | None:
-        return next(
-            (char for char in context.characters.mainCharacters if char.id == character_id),
-            None,
-        )
+        if context.characters:
+            return next(
+                (char for char in context.characters.mainCharacters if char.id == character_id),
+                None,
+            )
+        return None
 
     @staticmethod
     def retrieve_secondary_character_data(
-        context: StoryContext,
-        character_id: str,
+        context: StoryContext, character_id: str
     ) -> Character | None:
-        return next(
-            (char for char in context.characters.secondaryCharacters if char.id == character_id),
-            None,
-        )
+        if context.characters:
+            return next(
+                (
+                    char
+                    for char in context.characters.secondaryCharacters
+                    if char.id == character_id
+                ),
+                None,
+            )
+        return None
 
     @staticmethod
     def retrieve_main_plot_point_data(context: StoryContext, plot_id: str) -> PlotPoint | None:
-        return next(
-            (plot for plot in context.mainPlots if plot.id == plot_id),
-            None,
-        )
+        if context.mainPlots:
+            return next((plot for plot in context.mainPlots if plot.id == plot_id), None)
+        return None
 
     @staticmethod
-    def retrieve_secondary_plot_point_data(
-        context: StoryContext,
-        plot_id: str,
-    ) -> PlotPoint | None:
-        return next(
-            (plot for plot in context.subPlots if plot.id == plot_id),
-            None,
-        )
+    def retrieve_secondary_plot_point_data(context: StoryContext, plot_id: str) -> PlotPoint | None:
+        if context.subPlots:
+            return next((plot for plot in context.subPlots if plot.id == plot_id), None)
+        return None
 
     @staticmethod
-    def retrieve_rules(context: StoryContext) -> Rules:
-        return context.rules
+    def retrieve_rules(context: StoryContext) -> Rules | None:
+        if context.rules:
+            return context.rules
+        return None
 
     @staticmethod
     def retrieve_themes(context: StoryContext) -> list[str]:
-        return context.themes
+        if context.themes:
+            return context.themes
+        return []
 
     @staticmethod
     def retrieve_narrator_data(context: StoryContext, narrator_id: str) -> Narrator | None:
-        return next(
-            (narrator for narrator in context.narration if narrator.id == narrator_id),
-            None,
-        )
+        if context.narration:
+            potential_narrators = next(
+                (narrator for narrator in context.narration if narrator.id == narrator_id), None
+            )
+            return potential_narrators[0] if potential_narrators else None
+        return None
 
     @staticmethod
     def retrieve_current_context(context: StoryContext) -> CurrentContext:
@@ -80,8 +90,7 @@ class StoryItemRetrievers:
 class StoryItemUpdater:
     @staticmethod
     def remove_character_from_current_context(
-        context: StoryContext,
-        character_id: str,
+        context: StoryContext, character_id: str
     ) -> CurrentContext:
         context.currentContext.charactersPresent = [
             character
@@ -92,21 +101,16 @@ class StoryItemUpdater:
 
     @staticmethod
     def add_character_to_current_context(
-        context: StoryContext,
-        character: Character,
+        context: StoryContext, character: Character
     ) -> CurrentContext:
         name_and_id = {"characterId": character.id, "name": character.firstName}
         char_to_append = CharacterNameAndId(**name_and_id)
-        context.currentContext.charactersPresent.append(
-            char_to_append,
-        )
+        context.currentContext.charactersPresent.append(char_to_append)
         return context.currentContext
 
     @staticmethod
     def add_new_character_to_context(
-        context: StoryContext,
-        character: Character,
-        main_or_secondary: str = "main",
+        context: StoryContext, character: Character, main_or_secondary: str = "main"
     ) -> StoryContext:
         if main_or_secondary == "main":
             context.characters.mainCharacters.append(character)
@@ -116,8 +120,7 @@ class StoryItemUpdater:
 
     @staticmethod
     def update_existing_character_in_context(
-        context: StoryContext,
-        character: Character,
+        context: StoryContext, character: Character
     ) -> StoryContext:
         if character in context.characters.mainCharacters:
             context.characters.mainCharacters.remove(character)

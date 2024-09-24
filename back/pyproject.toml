@@ -37,6 +37,7 @@ ignore = [
 "DTZ005",
 "INP001",
 "EM101",
+"COM812"
 ]
 [tool.ruff]
 fix = true 
@@ -44,6 +45,9 @@ exclude = ["tests/*", "server/tests/*", "models/helpers/log_decorators.py", "too
 line-length = 100
 
 
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+line-ending = "auto"
 
 
 

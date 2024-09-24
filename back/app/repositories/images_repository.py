@@ -1,0 +1,2 @@
+class ImagesRepository:
+    pass

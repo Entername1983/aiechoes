@@ -5,10 +5,7 @@ import replicate
 import replicate.client
 from anthropic import AsyncAnthropic
 from mistralai import Mistral, ResponseFormat, UserMessage
-from openai import (
-    AsyncOpenAI,
-    NotGiven,
-)
+from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from app.dependencies.settings import get_settings
@@ -41,10 +38,7 @@ class AiQuery:
         response = await openai.chat.completions.create(
             model=self.settings.open_ai.main_model,
             messages=[
-                {
-                    "role": "system",
-                    "content": "You are playing a game of exquisite corpse",
-                },
+                {"role": "system", "content": "You are playing a game of exquisite corpse"},
                 {"role": "assistant", "content": self.prompt},
             ],
             max_tokens=self.settings.open_ai.max_tokens,
@@ -78,8 +72,7 @@ class AiQuery:
         }
         if response_format is not None:
             api_params["response_format"] = response_format
-        else:
-            api_params["response_format"] = NotGiven
+            return await openai.beta.chat.completions.parse(**api_params)
         return await openai.chat.completions.create(**api_params)
 
     async def query_gemini(self) -> str:
@@ -90,22 +83,16 @@ class AiQuery:
             text = response.text
         except Exception as e:
             msg = f"Invalid response from Gemini: {e}"
-            raise CallAiExceptions.InvalidResponseError(
-                msg,
-            ) from e
+            raise CallAiExceptions.InvalidResponseError(msg) from e
         return response.text
 
     async def query_claude(self) -> str:
-        anthropic = AsyncAnthropic(
-            api_key=self.settings.anthropic.anthropic_api_key,
-        )
+        anthropic = AsyncAnthropic(api_key=self.settings.anthropic.anthropic_api_key)
         completion = anthropic.messages.create(
             temperature=self.settings.temperature,
             model=self.settings.anthropic.main_model,
             max_tokens=self.settings.anthropic.max_tokens,
-            messages=[
-                {"role": "user", "content": self.prompt},
-            ],
+            messages=[{"role": "user", "content": self.prompt}],
         )
         response = await completion
         response.content[0]
@@ -116,23 +103,20 @@ class AiQuery:
         user_message = UserMessage(role="user", content=self.prompt)
         messages = [user_message]
         chat_response = await client.chat.complete_async(
-            model=self.settings.mistral.main_model,
-            messages=messages,
+            model=self.settings.mistral.main_model, messages=messages
         )
         if chat_response is None or chat_response.choices is None:
             raise CallAiExceptions.NoResponseError("Mistral call Response is None")
         content = chat_response.choices[0].message.content
         if isinstance(content, str):
             return content
-        raise CallAiExceptions.InvalidResponseError(
-            "Mistral call Response is not a string",
-        )
+        raise CallAiExceptions.InvalidResponseError("Mistral call Response is not a string")
 
     async def query_llama(self) -> str:
         client = replicate.Client(api_token=self.settings.llama.replicate_api_key)
         input_to_llm = {
             # "top_p": self.settings.top_p,
-            "prompt": self.prompt,
+            "prompt": self.prompt
             # "min_tokens": self.settings.llama.min_tokens,
             # "temperature": self.settings.temperature,
             # "prompt_template": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou
@@ -149,10 +133,7 @@ class AiQuery:
         print(response)
         return "".join(output)
 
-    async def create_image(
-        self,
-        image_prompt: str,
-    ) -> Union[str, None]:
+    async def create_image(self, image_prompt: str) -> Union[str, None]:
         openai = AsyncOpenAI(api_key=self.settings.open_ai.openai_api_key)
         response = await openai.images.generate(
             model=self.settings.open_ai.image_model,

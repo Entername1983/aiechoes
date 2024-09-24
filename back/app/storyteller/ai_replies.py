@@ -1,4 +1,5 @@
 ## available_llms - gemini, claude, gpt
+import json
 import logging
 import re
 from datetime import datetime as dt
@@ -7,20 +8,19 @@ from datetime import timezone
 import asyncpg
 import requests
 from sqlalchemy import desc, select
-from sqlalchemy.ext.asyncio import (
-    async_sessionmaker,
-    create_async_engine,
-)
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.dependencies.settings import get_settings
 from app.exceptions.CallAiExceptions import CallAiExceptions
-from app.models.models import Images, Replies
-from app.models.story_context import StoryContexts
+from app.models.models import Images, Replies, Stories, StoryContexts
+from app.repositories.stories_repository import StoriesRepository
+from app.repositories.story_context_repository import StoryContextRepository
 from app.s3.storage_manager import StorageManager
 from app.storyteller.ai_query import AiQuery
 from app.storyteller.data import INITIAL_CONTEXT
+from app.storyteller.prompts import StoryPrompts
 from app.storyteller.story_context_manager import StoryContextManager
-from app.storyteller.storyteller_schemas import StoryContext
+from app.storyteller.storyteller_schemas import AllCharacters, Setting, StoryContext
 from app.utils.log_decorators import log_deco
 from app.utils.loggers import story_logger as log
 
@@ -39,12 +39,9 @@ echo_enabled = settings.app.environment == "development"
 engine = create_async_engine(
     settings.db.async_sqlalchemy_database_uri,
     **settings.db.async_sqlalchemy_engine_options,
-    echo=True,
+    echo=False,
 )
-session_factory = async_sessionmaker(
-    engine,
-    expire_on_commit=settings.db.expire_on_commit,
-)
+session_factory = async_sessionmaker(engine, expire_on_commit=settings.db.expire_on_commit)
 
 
 class AiReplies:
@@ -66,31 +63,110 @@ class AiReplies:
             "gemini": self.settings.gemini.main_model,
         }
 
-    @log_deco
+    async def start(self) -> None:
+        await self.retrieve_story()
+        await self.select_llm()
+        await self.retrieve_prev_replies()
+        await self.retrieve_and_set_context()
+        await self.set_new_reply_prompt()
+        await self.get_new_reply()
+        self.update_batch_info()
+        await self.add_image_to_story()
+        await self.update_db_with_new_reply()
+        await self.update_context()
+
+    async def update_context(self) -> None:
+        if self.number_in_batch == BATCH_SIZE and self.story.story_type == "wc":
+            new_reply = self.new_reply if self.new_reply else ""
+            excerpt = self.prev_replies_string + new_reply
+            self.context_manager.update_story_excerpt(excerpt)
+            await self.context_manager.update_story_context()
+            async with session_factory() as session:
+                await StoryContextRepository.add_new_context_entry_to_db(
+                    session, self.context_manager.context, self.story_id
+                )
+
+    async def retrieve_story(self) -> None:
+        async with session_factory() as session:
+            self.story: Stories = await StoriesRepository.retrieve_story_by_id(
+                session, self.story_id
+            )
+
+    async def set_new_reply_prompt(self) -> None:
+        if self.prev_replies is None:
+            await self.create_initial_prompt()
+        else:
+            self.prev_replies_string = "".join([reply.reply for reply in self.prev_replies])
+            await self.create_prompt()
+
+    async def retrieve_and_set_context(self) -> None:
+        if self.story.story_type == "wc":  ##with context
+            db_context_response = await self.retrieve_current_context()
+            if db_context_response is None:
+                log.debug("-------------No context found-----------------")
+                db_context_response = await self.create_initial_context()
+            log.debug(
+                "---------------------------------------db_context_response %s",
+                json.dumps(db_context_response.to_dict(), indent=4),
+            )
+            context_dict = db_context_response.to_dict()
+            self.check_context_data_in_details(context_dict["context"])
+            self.context_manager = StoryContextManager(StoryContext(**context_dict["context"]), "")
+
+    def check_context_data_in_details(self, context: dict) -> bool:
+        # log.info("CONTEXT %s", context)
+        # log.info("!!!!!!-------------------------------------------------------!!!!!!")
+        # log.info("Story Rules %s", context["rules"])
+        # rules = Rules(**context["rules"])
+        # log.info("!!!!!!-------------------------------------------------------!!!!!!")
+        # log.info("Current context %s", context["currentContext"])
+        # current_context = CurrentContext(**context["currentContext"])
+        # log.info("!!!!!!-------------------------------------------------------!!!!!!")
+        # log.info("narration %s", json.dumps(context["narration"], indent=4))
+        # narration = Narrator(**context["narration"]["narrators"][0])
+        # log.info("!!!!!!-------------------------------------------------------!!!!!!")
+        # log.info("themes %s", json.dumps(context["themes"], indent=4))
+        # themes = context["themes"]
+        # log.info("!!!!!!-------------------------------------------------------!!!!!!")
+        # log.info("sub plots %s", json.dumps(context["subPlots"], indent=4))
+        # sub_plots = PlotPoint(**context["subPlots"][0])
+        # log.info("!!!!!!-------------------------------------------------------!!!!!!")
+        # log.info("main plots %s", json.dumps(context["mainPlots"], indent=4))
+        # main_plots = PlotPoint(**context["mainPlots"][0])
+        log.info("!!!!!!-------------------------------------------------------!!!!!!")
+        log.info("characters %s", json.dumps(context["characters"], indent=4))
+        characters = AllCharacters(**context["characters"])
+        log.info("!!!!!!-------------------------------------------------------!!!!!!")
+        log.info("settings %s", json.dumps(context["setting"], indent=4))
+        settings = Setting(**context["setting"])
+
+        return True
+
+    async def retrieve_prev_replies(self) -> None:
+        self.prev_replies = await self.retrieve_latest_n_db_entries(
+            NUMBER_OF_REPLIES_TO_USE_FOR_PROMPT
+        )
+
     async def create_initial_prompt(self) -> None:
         self.prompt = """You are the first player in a game of exquisite corpse.
         Please write a sentence to start the story."""
 
-    @log_deco
     async def select_llm(self) -> None:
         self.current_llm = self.available_llms[self.current_llm_index]
         self.current_llm_index += 1
         if self.current_llm_index + 1 > len(self.available_llms):
             self.current_llm_index = 0
 
-    @log_deco
     async def create_prompt(self) -> None:
-        story_context = self.context_manager.create_context_description()
         if self.prev_replies_string is None:
             raise CallAiExceptions.NoPreviousReplyError
-        self.prompt = f"""This is the current context of a story in progress:\n {story_context}\n
-        You are tasked with writting the next sentence in a story. The previous 5 sentences
-        written by players are:\n
-        {self.prev_replies_string}.\n Please write the next sentence to continue the story.
-        Only reply with the next sentence you would like to add to the story.
-        Do not include any markdown or formatting or anything other than the
-        sentence that continues the story. You must not reply with anything other than the next
-        sentence."""
+        if self.story.story_type == "wc":
+            story_context = await self.context_manager.create_context_description()
+            self.prompt = StoryPrompts.story_prompt_with_context(
+                story_context, self.prev_replies_string
+            )
+        else:
+            self.prompt = StoryPrompts.story_prompt_without_context(self.prev_replies_string)
         log.info("Prompt created", self.prompt)
 
     def check_if_reply_is_too_long_and_fix(self) -> None:
@@ -105,15 +181,12 @@ class AiReplies:
             self.image_prompt = split_prompt[0] + "."
             log.info("removed extra text from prompt %s", self.image_prompt)
 
-    @log_deco
     async def update_db_with_new_reply(self) -> None:
         self.check_if_reply_is_too_long_and_fix()
         model_version_used = self.model_versions_dict[self.current_llm]
         if model_version_used is None:
             msg = "Unable to find model version to update db with"
-            raise CallAiExceptions.InvalidLlmError(
-                msg,
-            )
+            raise CallAiExceptions.InvalidLlmError(msg)
         new_reply = Replies(
             reply=self.new_reply,
             model=self.current_llm,
@@ -149,35 +222,10 @@ class AiReplies:
 
     # TODO: select store which llms have been used in a db so
     # that we can use all llms before repeating
-    @log_deco
-    async def start(self) -> None:
-        await self.select_llm()
-        self.prev_replies = await self.retrieve_latest_n_db_entries(
-            NUMBER_OF_REPLIES_TO_USE_FOR_PROMPT,
-        )
-        db_context_response = await self.retrieve_current_context()
-        if db_context_response is None:
-            db_context_response = await self.create_initial_context()
-        self.context_manager = StoryContextManager(StoryContext(**db_context_response.context), "")
-        if self.prev_replies is None:
-            await self.create_initial_prompt()
-        else:
-            self.prev_replies_string = "".join([reply.reply for reply in self.prev_replies])
-            await self.create_prompt()
-        await self.get_new_reply()
-        self.update_batch_info()
-        await self.add_image_to_story()
-        await self.update_db_with_new_reply()
 
     async def retrieve_current_context(self) -> StoryContexts:
         async with session_factory() as session:
-            result = await session.execute(
-                select(StoryContexts)
-                .filter(StoryContexts.story_id == self.story_id)
-                .order_by(desc(StoryContexts.id))
-                .limit(1),
-            )
-            return result.scalars().first()
+            return await StoryContextRepository.retrieve_story_context(session, self.story_id)
 
     async def create_initial_context(self) -> StoryContexts:
         new_context = StoryContexts(story_id=self.story_id, context=INITIAL_CONTEXT)
@@ -235,7 +283,7 @@ class AiReplies:
                 select(Replies)
                 .filter(Replies.story_id == self.story_id)
                 .order_by(desc(Replies.time_created))
-                .limit(qty_replies),
+                .limit(qty_replies)
             )
             return list(result.scalars().all())
 

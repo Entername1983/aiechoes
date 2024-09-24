@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 from app.schemas.config import config
@@ -5,25 +7,25 @@ from app.schemas.config import config
 
 class Event(BaseModel):
     model_config = config
-    event_id: str
+    id: str
     date: str
-    time: str
+    time: Optional[str] = None
     event: str
 
 
 class Locations(BaseModel):
     model_config = config
-    locationId: str
+    id: str
     name: str
-    description: str
-    significance: str
-    coordinates: dict
-    history: list[str]
-    builtYear: int
-    currentCondition: str
+    description: Optional[str] = None
+    significance: Optional[str] = None
+    coordinates: Optional[dict] = None
+    history: Optional[list[str]] = None
+    builtYear: Optional[int] = None
+    currentCondition: Optional[str] = None
 
 
-class Settings(BaseModel):
+class Setting(BaseModel):
     model_config = config
     timePeriod: str
     timeline: list[Event]
@@ -74,12 +76,12 @@ class PlotPoint(BaseModel):
 
 class NarrationRules(BaseModel):
     model_config = config
-    perspective: str
-    access: str
-    limitations: str
-    tone: str
-    style: str
-    tense: str
+    perspective: str | None = None
+    access: str | None = None
+    limitations: str | None = None
+    tone: str | None = None
+    style: str | None = None
+    tense: str | None = None
 
 
 class Narrator(BaseModel):
@@ -111,7 +113,7 @@ class CurrentContext(BaseModel):
     charactersPresent: list[CharacterNameAndId]
     summary: str
     characterStates: dict
-    Narator: str
+    narrator: str
     mainPlot: str
     subPlot: str
 
@@ -132,16 +134,23 @@ class AllCharacters(BaseModel):
     secondaryCharacters: list[Character]
 
 
+class Narration(BaseModel):
+    model_config = config
+    narrators: list[Narrator]
+    narrationRules: NarrationRules
+    currentNarrator: str
+
+
 class StoryContext(BaseModel):
     model_config = config
-    settings: Settings
-    characters: AllCharacters
-    mainPlots: list[PlotPoint]
-    subPlots: list[PlotPoint]
-    themes: list[str]
-    narration: list[Narrator]
-    currentContext: CurrentContext
-    rules: Rules
+    setting: Optional[Setting] = None
+    characters: Optional[AllCharacters] = None
+    mainPlots: Optional[list[PlotPoint]] = None
+    subPlots: Optional[list[PlotPoint]] = None
+    themes: Optional[list[str]] = None
+    narration: Optional[Narration] = None
+    currentContext: Optional[CurrentContext] = None
+    rules: Optional[Rules] = None
 
 
 #### llm_response_models
@@ -177,15 +186,15 @@ class AddNewLocationResponse(BaseModel):
 
 class CurrentContextSummaryData(BaseModel):
     model_config = config
-    mainPlot: PlotPoint
-    subPlot: PlotPoint
-    mainCharacters: list[Character]
-    secondaryCharacters: list[Character]
-    Narator: Narrator
-    themes: list[str]
-    location: LocationNameAndId
-    time: str
-    weather: str
+    mainPlot: Optional[PlotPoint] = None
+    subPlot: Optional[PlotPoint] = None
+    mainCharacters: Optional[list[Character]] = None
+    secondaryCharacters: Optional[list[Character]] = None
+    narrator: Optional[Narrator] = None
+    themes: Optional[list[str]] = None
+    location: Optional[LocationNameAndId] = None
+    time: Optional[str] = None
+    weather: Optional[str] = None
 
 
 class EnteringCharacterResponse(BaseModel):

@@ -12,7 +12,7 @@ from app.dependencies.settings import get_settings
 logger = logging.getLogger("App")
 settings = get_settings()
 
-echo_enabled = True if settings.app.environment == "development" else False
+echo_enabled = settings.app.environment == "development"
 
 
 engine = create_async_engine(
@@ -21,7 +21,8 @@ engine = create_async_engine(
     echo=False,
 )
 async_session = async_sessionmaker(
-    engine, expire_on_commit=settings.db.expire_on_commit
+    engine,
+    expire_on_commit=settings.db.expire_on_commit,
 )
 
 # sync_engine = create_engine(
