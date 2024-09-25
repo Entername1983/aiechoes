@@ -1,3 +1,4 @@
+from app.exceptions.StoryContextExceptions import StoryContextExceptions
 from app.storyteller.storyteller_schemas import (
     Character,
     CharacterNameAndId,
@@ -75,43 +76,57 @@ class StoryItemRetrievers:
 
     @staticmethod
     def retrieve_narrator_data(context: StoryContext, narrator_id: str) -> Narrator | None:
-        if context.narration:
-            potential_narrators = next(
-                (narrator for narrator in context.narration if narrator.id == narrator_id), None
+        if context.narration and context.narration.narrators:
+            return next(
+                (
+                    narrator
+                    for narrator in context.narration.narrators
+                    if narrator.id == narrator_id
+                ),
+                None,
             )
-            return potential_narrators[0] if potential_narrators else None
         return None
 
     @staticmethod
-    def retrieve_current_context(context: StoryContext) -> CurrentContext:
-        return context.currentContext
+    def retrieve_current_context(context: StoryContext) -> CurrentContext | None:
+        if context.currentContext:
+            return context.currentContext
+        return None
 
 
 class StoryItemUpdater:
     @staticmethod
     def remove_character_from_current_context(
         context: StoryContext, character_id: str
-    ) -> CurrentContext:
-        context.currentContext.charactersPresent = [
-            character
-            for character in context.currentContext.charactersPresent
-            if character.characterId != character_id
-        ]
+    ) -> CurrentContext | None:
+        if not context.currentContext:
+            raise StoryContextExceptions.NoCurrentContextError
+        if context.currentContext.charactersPresent:
+            context.currentContext.charactersPresent = [
+                character
+                for character in context.currentContext.charactersPresent
+                if character.characterId != character_id
+            ]
         return context.currentContext
 
     @staticmethod
     def add_character_to_current_context(
         context: StoryContext, character: Character
     ) -> CurrentContext:
+        if not context.currentContext:
+            raise StoryContextExceptions.NoCurrentContextError
         name_and_id = {"characterId": character.id, "name": character.firstName}
         char_to_append = CharacterNameAndId(**name_and_id)
-        context.currentContext.charactersPresent.append(char_to_append)
+        if context.currentContext and context.currentContext.charactersPresent:
+            context.currentContext.charactersPresent.append(char_to_append)
         return context.currentContext
 
     @staticmethod
     def add_new_character_to_context(
         context: StoryContext, character: Character, main_or_secondary: str = "main"
     ) -> StoryContext:
+        if not context.characters:
+            raise StoryContextExceptions.NoCharactersInContextError
         if main_or_secondary == "main":
             context.characters.mainCharacters.append(character)
         else:
@@ -122,6 +137,8 @@ class StoryItemUpdater:
     def update_existing_character_in_context(
         context: StoryContext, character: Character
     ) -> StoryContext:
+        if not context.characters:
+            raise StoryContextExceptions.NoCharactersInContextError
         if character in context.characters.mainCharacters:
             context.characters.mainCharacters.remove(character)
             context.characters.mainCharacters.append(character)

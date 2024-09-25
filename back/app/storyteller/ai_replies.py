@@ -20,7 +20,7 @@ from app.storyteller.ai_query import AiQuery
 from app.storyteller.data import INITIAL_CONTEXT
 from app.storyteller.prompts import StoryPrompts
 from app.storyteller.story_context_manager import StoryContextManager
-from app.storyteller.storyteller_schemas import AllCharacters, Setting, StoryContext
+from app.storyteller.storyteller_schemas import StoryContext
 from app.utils.log_decorators import log_deco
 from app.utils.loggers import story_logger as log
 
@@ -133,12 +133,12 @@ class AiReplies:
         # log.info("!!!!!!-------------------------------------------------------!!!!!!")
         # log.info("main plots %s", json.dumps(context["mainPlots"], indent=4))
         # main_plots = PlotPoint(**context["mainPlots"][0])
-        log.info("!!!!!!-------------------------------------------------------!!!!!!")
-        log.info("characters %s", json.dumps(context["characters"], indent=4))
-        characters = AllCharacters(**context["characters"])
-        log.info("!!!!!!-------------------------------------------------------!!!!!!")
-        log.info("settings %s", json.dumps(context["setting"], indent=4))
-        settings = Setting(**context["setting"])
+        # log.info("!!!!!!-------------------------------------------------------!!!!!!")
+        # log.info("characters %s", json.dumps(context["characters"], indent=4))
+        # characters = AllCharacters(**context["characters"])
+        # log.info("!!!!!!-------------------------------------------------------!!!!!!")
+        # log.info("settings %s", json.dumps(context["setting"], indent=4))
+        # settings = Setting(**context["setting"])
 
         return True
 
@@ -161,13 +161,13 @@ class AiReplies:
         if self.prev_replies_string is None:
             raise CallAiExceptions.NoPreviousReplyError
         if self.story.story_type == "wc":
-            story_context = await self.context_manager.create_context_description()
+            story_context = await self.context_manager.create_context_summary()
             self.prompt = StoryPrompts.story_prompt_with_context(
                 story_context, self.prev_replies_string
             )
         else:
             self.prompt = StoryPrompts.story_prompt_without_context(self.prev_replies_string)
-        log.info("Prompt created", self.prompt)
+        log.info("Prompt created , %s", self.prompt)
 
     def check_if_reply_is_too_long_and_fix(self) -> None:
         if self.new_reply and len(self.new_reply) > MAX_REPLY_LENGTH:
@@ -296,6 +296,7 @@ class AiReplies:
         ai_query = AiQuery(self.current_llm, self.prompt)
         new_reply: str = await ai_query.query()
         self.new_reply = new_reply
+        log.info("--------------------New reply created--------------, \n \n %s", new_reply)
 
 
 async def download_image(url: str) -> bytes:

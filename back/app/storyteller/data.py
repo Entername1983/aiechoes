@@ -8,7 +8,7 @@ INITIAL_CONTEXT = {
         "style": "",
     },
     "themes": ["Friendship", "Adventure", "Self-Discovery", "Reconciliation", "Mystery"],
-    "settings": {
+    "setting": {
         "timeline": [
             {"id": "EV1", "date": "2023-01-01", "event": "John discovers an old map in his attic."},
             {
@@ -171,7 +171,9 @@ INITIAL_CONTEXT = {
             {
                 "id": "C2",
                 "age": "25",
-                "name": "Emily Turner",
+                "firstName": "Emily",
+                "lastName": "Turner",
+                "nickname": "None",
                 "goals": ["Uncover the conspiracy", "Achieve a breakthrough in her career"],
                 "traits": ["outgoing", "determined", "clever"],
                 "background": {
@@ -196,6 +198,7 @@ INITIAL_CONTEXT = {
                     },
                 ],
             },
-        ]
+        ],
+        "secondaryCharacters": [],
     },
 }

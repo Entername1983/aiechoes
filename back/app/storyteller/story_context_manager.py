@@ -16,7 +16,9 @@ class StoryContextManager:
         self.plot_manager: PlotManager = PlotManager(context, story_excerpt)
         self.setting_manager: SettingManager = SettingManager(context, story_excerpt)
         self.retriever = StoryItemRetrievers()
-        self.current_context_summary_data: CurrentContextSummaryData = CurrentContextSummaryData()
+        self.current_context_summary_data: CurrentContextSummaryData = CurrentContextSummaryData(
+            mainCharacters=[], secondaryCharacters=[], themes=[]
+        )
 
     def update_story_excerpt(self, story_excerpt: str) -> None:
         self.character_manager.story_excerpt = self.plot_manager.story_excerpt = (
@@ -39,7 +41,6 @@ class StoryContextManager:
 
     # TODO: Consider add more depth, for example looking up the characters involve in the plots
     async def create_context_summary(self) -> str:
-        self.current_context_summary_data: CurrentContextSummaryData
         self.set_main_plot()
         self.set_sub_plot()
         self.set_characters_present()
@@ -52,10 +53,13 @@ class StoryContextManager:
         return await self.create_context_description()
 
     def set_main_plot(self) -> None:
+        log.debug("-----------------SETTING MAIN PLOT-----------------\n --------------------")
+        log.debug("-------------------------CONTEXT: %s", self.context)
         if self.context.currentContext and self.context.currentContext.mainPlot:
             main_plot = self.retriever.retrieve_main_plot_point_data(
                 self.context, self.context.currentContext.mainPlot
             )
+            log.debug("------------------MAIN PLOT: %s", main_plot)
             if main_plot:
                 self.current_context_summary_data.mainPlot = main_plot
 

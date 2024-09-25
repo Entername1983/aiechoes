@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 from datetime import datetime, timezone
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -33,6 +34,10 @@ scheduler.add_job(job_function, trigger)
 settings = get_settings()
 
 settings_dict = settings.model_dump()
+
+# Set the log level for httpx and httpcore to WARNING or ERROR
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 
 async def main() -> None:
