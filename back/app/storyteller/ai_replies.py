@@ -76,6 +76,7 @@ class AiReplies:
         await self.update_context()
 
     async def update_context(self) -> None:
+        log.info("-----------------Updating context-----------------")
         if self.number_in_batch == BATCH_SIZE and self.story.story_type == "wc":
             new_reply = self.new_reply if self.new_reply else ""
             excerpt = self.prev_replies_string + new_reply

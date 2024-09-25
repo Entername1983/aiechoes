@@ -13,3 +13,7 @@ class StoryContextExceptions:
     class NoCharactersInContextError(MyBaseError):
         def __init__(self, message: str = "No characters in story context."):
             super().__init__(message)
+
+    class NothingToParseError(MyBaseError):
+        def __init__(self, message: str = "No parsed data from AI response."):
+            super().__init__(message)

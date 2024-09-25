@@ -51,6 +51,7 @@ class AiQuery:
             raise CallAiExceptions.NoResponseError("OpenAI call Response is None")
         return response
 
+    ## TODO: Seperate out reasoning and stucturing llm steps
     ## need to get message.parsed
     async def query_gpt_general(
         self,

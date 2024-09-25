@@ -9,6 +9,7 @@ from app.storyteller.storyteller_schemas import (
     EnteringCharacterResponse,
     StoryContext,
 )
+from app.utils.loggers import story_logger as log
 
 
 class CharacterManager:
@@ -32,10 +33,10 @@ class CharacterManager:
         assist_content = StoryPrompts.leaving_entering_prompt()
         sys_content = StoryPrompts.sys_instruct()
         response = await self.ai_query.query_gpt_general(
-            assist_content,
-            sys_content,
-            CharacterEnteringLeavingResponse,
+            assist_content, sys_content, CharacterEnteringLeavingResponse
         )
+        if not response.choices[0].message.parsed:
+            raise StoryContextExceptions.NothingToParseError
         if response.choices[0].message.parsed.leaving:
             await self.leaving_character()
         if response.choices[0].message.parsed.entering:
@@ -43,20 +44,18 @@ class CharacterManager:
 
     async def update_existing_characters(self) -> None:
         assist_content = StoryPrompts.identify_character_changes(
-            self.story_excerpt,
-            self.existing_characters,
+            self.story_excerpt, self.existing_characters
         )
         sys_content = StoryPrompts.sys_instruct()
         response = await self.ai_query.query_gpt_general(
-            assist_content,
-            sys_content,
-            CharacterEnteringLeavingResponse,
+            assist_content, sys_content, CharacterEnteringLeavingResponse
         )
+        if not response.choices[0].message.parsed:
+            raise StoryContextExceptions.NothingToParseError
         if response.choices[0].message.parsed.charactersChanged:
             for char in response.choices[0].message.parsed.changes:
                 character = self.retriever.retrieve_main_character_data(
-                    self.context,
-                    char.characterId,
+                    self.context, char.characterId
                 )
                 if not character:
                     raise StoryContextExceptions.CharacterNotFoundError
@@ -72,22 +71,22 @@ class CharacterManager:
             self.updater.update_existing_character_in_context(self.context, updated_character)
 
     async def leaving_character(self) -> None:
+        if self.context.currentContext is None:
+            raise StoryContextExceptions.NoCurrentContextError
         assist_content = StoryPrompts.leaving_prommpt(
-            self.context.currentContext.charactersPresent,
-            self.story_excerpt,
+            self.context.currentContext.charactersPresent, self.story_excerpt
         )
 
         sys_content = StoryPrompts.sys_instruct()
         response = await self.ai_query.query_gpt_general(
-            assist_content,
-            sys_content,
-            CharacterEnteringLeavingResponse,
+            assist_content, sys_content, CharacterEnteringLeavingResponse
         )
+        if not response.choices[0].message.parsed:
+            raise StoryContextExceptions.NothingToParseError
         if response.choices[0].message.parsed.characters:
             for char in response.choices[0].message.parsed.characters:
                 character = self.retriever.retrieve_main_character_data(
-                    self.context,
-                    char.characterId,
+                    self.context, char.characterId
                 )
                 if character:
                     self.updater.remove_character_from_current_context(self.context, character.id)
@@ -99,20 +98,18 @@ class CharacterManager:
         ### if so response with character id and name
         ### if not create new character and add to context
         assist_content = StoryPrompts.entering_character_prompt(
-            self.existing_characters,
-            self.story_excerpt,
+            self.existing_characters, self.story_excerpt
         )
         sys_content = StoryPrompts.sys_instruct()
         response = await self.ai_query.query_gpt_general(
-            assist_content,
-            sys_content,
-            EnteringCharacterResponse,
+            assist_content, sys_content, EnteringCharacterResponse
         )
+        if not response.choices[0].message.parsed:
+            raise StoryContextExceptions.NothingToParseError
         if response.choices[0].message.parsed.existing_characters:
             for char in response.choices[0].message.parsed.existing_characters:
                 character = self.retriever.retrieve_main_character_data(
-                    self.context,
-                    char.characterId,
+                    self.context, char.characterId
                 )
                 if character:
                     self.updater.add_character_to_current_context(self.context, character)
@@ -121,6 +118,7 @@ class CharacterManager:
                 await self.create_new_character(char)
 
     async def create_new_character(self, char: CharacterNameAndId) -> None:
+        log.info("------------------ CREATING NEW LIFE --------------------------")
         assist_content = StoryPrompts.new_character_prompt(self.story_excerpt, char)
         sys_content = StoryPrompts.sys_instruct()
         response = await self.ai_query.query_gpt_general(assist_content, sys_content, Character)

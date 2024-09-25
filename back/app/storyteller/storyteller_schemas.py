@@ -53,10 +53,10 @@ class Character(BaseModel):
     model_config = config
     id: str
     firstName: str
-    lastName: str
-    nickname: str
+    lastName: Optional[str] = None
+    nickname: Optional[str] = None
     age: int
-    background: Background
+    background: Optional[Background] = None
     traits: list[str]
     goals: list[str]
     relationships: list[Relationship]
@@ -188,10 +188,10 @@ class CurrentContextSummaryData(BaseModel):
     model_config = config
     mainPlot: Optional[PlotPoint] = None
     subPlot: Optional[PlotPoint] = None
-    mainCharacters: Optional[list[Character]] = None
-    secondaryCharacters: Optional[list[Character]] = None
+    mainCharacters: list[Character]
+    secondaryCharacters: list[Character]
     narrator: Optional[Narrator] = None
-    themes: Optional[list[str]] = None
+    themes: list[str]
     location: Optional[LocationNameAndId] = None
     time: Optional[str] = None
     weather: Optional[str] = None
