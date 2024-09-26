@@ -58,3 +58,10 @@ class StoryContextsSchema(BaseModel):
     id: int
     story_id: int
     context: dict
+
+
+class StoriesListResponse(BaseModel):
+    model_config = config
+    status: str
+    message: str
+    stories_list: list[StoriesSchema]

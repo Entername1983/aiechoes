@@ -4,20 +4,15 @@ from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import desc, func, select
 
 from app.dependencies.db import GetDb
-from app.models.images import Images
-from app.models.replies import Replies
+from app.models.models import Images, Replies, Stories
 from app.s3.storage_manager import StorageManager
-from app.schemas.replies import PreSignedUrlResponse, RepliesResponse
+from app.schemas.replies import PreSignedUrlResponse, RepliesResponse, StoriesListResponse
 
 replies_router = APIRouter()
 NUMBER_OF_REPLIES_IN_2_BATCHES = 10
 
 
-async def get_replies_from_db(
-    db: GetDb,
-    page: int = 1,
-    items: int = 10,
-) -> list[Replies]:
+async def get_replies_from_db(db: GetDb, page: int = 1, items: int = 10) -> list[Replies]:
     query = (
         select(Replies).order_by(desc(Replies.time_created)).limit(items).offset((page - 1) * items)
     )
@@ -26,10 +21,7 @@ async def get_replies_from_db(
     return list(list_replies)
 
 
-async def get_top_batch_ids_from_db(
-    db: GetDb,
-    qty_batches: int = 1,
-) -> list[int]:
+async def get_top_batch_ids_from_db(db: GetDb, qty_batches: int = 1) -> list[int]:
     query = select(Replies.batch_id).distinct().order_by(desc(Replies.batch_id)).limit(qty_batches)
     result = await db.execute(query)
     list_batch_ids = result.scalars().all()
@@ -37,9 +29,7 @@ async def get_top_batch_ids_from_db(
 
 
 async def get_next_two_batches_of_replies_from_db(
-    db: GetDb,
-    batch_offset: int = 0,
-    qty_batches: int = 2,
+    db: GetDb, batch_offset: int = 0, qty_batches: int = 2
 ) -> list[Replies]:
     batch_ids = await get_top_batch_ids_from_db(db, qty_batches)
     offset_batch_ids = [batch_id - batch_offset for batch_id in batch_ids]
@@ -77,6 +67,15 @@ async def get_replies_for_story(
         return await return_earliest_replies(db, story_id)
 
     raise HTTPException(status_code=400, detail="Invalid order parameter")
+
+
+@replies_router.get("/stories", response_model=StoriesListResponse, tags=["stories"])
+async def get_list_all_stories(db: GetDb) -> dict:
+    query = select(Stories).distinct()
+    result = await db.execute(query)
+    stories = result.scalars().all()
+    stories_data = [story.to_dict() for story in stories]
+    return {"status": "success", "message": "Stories retrieved", "stories_list": stories_data}
 
 
 async def return_earliest_replies(db: GetDb, story_id: int) -> dict:
@@ -139,7 +138,7 @@ async def return_batch_ids(db: GetDb, story_id: int, batch_ids: list[int]) -> di
 
 
 @replies_router.get("/image", response_model=PreSignedUrlResponse, tags=["image"])
-async def get_image_for_batch(db: GetDb, batch_id: int) -> dict:
+async def get_image_for_batch(db: GetDb, story_id: int, batch_id: int) -> dict:
     image_entry = await get_db_entry_from_db(db, batch_id)
     if image_entry is None:
         raise HTTPException(status_code=404, detail="Image not found")

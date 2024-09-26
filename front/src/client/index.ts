@@ -12,8 +12,11 @@ export type { PreSignedUrlResponse } from './models/PreSignedUrlResponse';
 export type { RepliesResponse } from './models/RepliesResponse';
 export type { RepliesSchema } from './models/RepliesSchema';
 export type { SimpleImagesSchema } from './models/SimpleImagesSchema';
+export type { StoriesListResponse } from './models/StoriesListResponse';
+export type { StoriesSchema } from './models/StoriesSchema';
 export type { ValidationError } from './models/ValidationError';
 
 export { DefaultService } from './services/DefaultService';
 export { ImageService } from './services/ImageService';
 export { RepliesService } from './services/RepliesService';
+export { StoriesService } from './services/StoriesService';

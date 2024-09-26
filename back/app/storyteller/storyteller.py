@@ -14,6 +14,7 @@ settings = get_settings()
 ai_replies = AiReplies(settings.story.available_llms, 2)
 
 
+
 async def job_function() -> None:
     log.info("Job executed at %s UTC", datetime.now(timezone.utc))
     await ai_replies.start()

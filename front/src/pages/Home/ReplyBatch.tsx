@@ -24,7 +24,11 @@ const ReplyBatch: React.FC<ReplyBatchProps> = ({ batch }) => {
 
   useEffect(() => {
     if (image == null) {
-      void dispatch(fetchImageUrl({ data: { batch_id: batch[0].batchId } }));
+      void dispatch(
+        fetchImageUrl({
+          data: { story_id: batch[0].storyId, batch_id: batch[0].batchId },
+        })
+      );
     }
   }, [dispatch, image, batch]);
 

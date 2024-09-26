@@ -80,6 +80,7 @@ const repliesSlice = createSlice({
       state.direction = action.payload;
     });
     builder.addCase(setStoryId.fulfilled, (state, action) => {
+      repliesAdapter.removeAll(state);
       state.storyId = action.payload;
     });
   },

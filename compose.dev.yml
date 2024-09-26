@@ -111,6 +111,8 @@ services:
       MINIO_ROOT_PASSWORD: minioadmin
     networks:
       - internal-network
+    logging:
+      driver: "none"
 volumes:
   minio_data:
 
