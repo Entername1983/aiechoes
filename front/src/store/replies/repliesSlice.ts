@@ -81,6 +81,8 @@ const repliesSlice = createSlice({
     });
     builder.addCase(setStoryId.fulfilled, (state, action) => {
       repliesAdapter.removeAll(state);
+      state.repliesLoaded = [];
+      state.batchesLoaded = [];
       state.storyId = action.payload;
     });
   },

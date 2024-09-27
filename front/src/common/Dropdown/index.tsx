@@ -22,19 +22,24 @@ interface DropdownProps {
   label?: string;
   dropdownRef?: Ref<HTMLInputElement>;
   onChange: (value: { id: number; label: string }) => void;
+  initialValue: { id: number; label: string };
   name?: string;
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
   dropdownRef,
   label,
-  options = [],
+  options,
   onChange,
+  initialValue,
   name = "name?",
 }) => {
   const [query, setQuery] = useState("");
-  const [value, setValue] = useState<{ id: number; label: string }>(options[0]);
+  const [value, setValue] = useState<{ id: number; label: string }>(
+    initialValue
+  );
   // returns the options that match the query using regex
+
   const filteredOptions =
     query === ""
       ? options
@@ -44,7 +49,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             .replace(/\s+/g, "")
             .includes(query.toLowerCase().replace(/\s+/g, ""))
         );
-  console.log("Filtered Options", filteredOptions);
+
   return (
     <div className="w-full">
       {/* Label */}
@@ -60,16 +65,18 @@ const Dropdown: React.FC<DropdownProps> = ({
             <ComboboxInput
               ref={dropdownRef}
               className={"w-full p-2 pl-4 pr-10 text-black"}
-              displayValue={(option: { value: number; label: string }) =>
-                option.label
+              displayValue={(value: { value: number; label: string }) =>
+                value.label
               }
               name={name}
               onChange={(event) => {
                 setQuery(event.target.value);
+                setValue({
+                  id: Number(event.target.id),
+                  label: event.target.value,
+                });
               }}
             />
-
-            {/* Button */}
             <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
               <ChevronDownIcon
                 className={`dark:text-aquamarine size-[35px] text-black`}

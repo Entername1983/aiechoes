@@ -1,7 +1,7 @@
 import { ButtonMain } from "@source/common/Buttons/ButtonMain";
 import { Dropdown } from "@source/common/Dropdown";
 import { useReplies } from "@source/store/useRepliesHooks";
-import React, { useEffect } from "react";
+import React from "react";
 
 import { Spinner } from "../../common/Spinner";
 import { StoryBox } from "./StoryBox";
@@ -12,7 +12,6 @@ const Home: React.FC = () => {
     allReplies,
     actionHandlers,
     storyTitle,
-    storyId,
     hasMore,
     batches,
     dummyRef,
@@ -21,21 +20,19 @@ const Home: React.FC = () => {
     dropdownChange,
   } = useReplies();
 
-  console.log("STORY ID", storyId);
-  console.log("Stories List", storiesList);
-
   return (
     <div className=" ">
-      <h1 className="text-2xl text-ghostWhite">
-        {storyTitle} {storyId}
-      </h1>
-      <div className="w-[200px] p-2">
-        <Dropdown
-          name={"hi name"}
-          options={storiesList}
-          label={"Stories"}
-          onChange={dropdownChange}
-        />
+      <div className="flex h-20 items-center justify-between">
+        <h1 className="p-2 text-2xl  text-ghostWhite">{storyTitle}</h1>
+        <div className="w-[200px] p-2">
+          <Dropdown
+            name={"hi name"}
+            options={storiesList}
+            label={"Stories"}
+            onChange={dropdownChange}
+            initialValue={storiesList[0]}
+          />
+        </div>
       </div>
       <div className="px-2 py-1 md:px-4 md:py-2">
         <div className="flex pr-2 md:justify-between">

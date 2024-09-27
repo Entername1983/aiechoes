@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from app.dependencies.settings import get_settings
 from app.exceptions.CallAiExceptions import CallAiExceptions
 from app.models.models import Images, Replies, Stories, StoryContexts
+from app.repositories.images_repository import ImagesRepository
 from app.repositories.stories_repository import StoriesRepository
 from app.repositories.story_context_repository import StoryContextRepository
 from app.s3.storage_manager import StorageManager
@@ -237,10 +238,18 @@ class AiReplies:
 
     async def add_image_to_story(self) -> None:
         if self.number_in_batch == BATCH_SIZE:
-            self.create_image_prompt()
-            await self.generate_image()
-            await self.save_image_to_s3()
-            await self.update_db_with_new_image()
+            ## check if image is already stored
+            async with session_factory() as db:
+                image = await ImagesRepository.retrieve_image_from_db_by_story_id_and_batch_id(
+                    db, self.story_id, self.batch_id
+                )
+            if image is None:
+                self.create_image_prompt()
+                await self.generate_image()
+                await self.save_image_to_s3()
+                await self.update_db_with_new_image()
+            else:
+                log.info("Image already stored in db")
 
     async def generate_image(self) -> None:
         ai_query = AiQuery(self.current_llm, self.image_prompt)

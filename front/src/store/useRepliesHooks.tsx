@@ -109,21 +109,16 @@ const useReplies = (): useRepliesResponse => {
     setScrollIntoView(true);
   };
   const updateStoryId = useCallback(
-    (storyId: number): void => {
+    (storyIdInDropdown: number): void => {
+      if (storyIdInDropdown === storyId) return;
       console.log("IN UPDATE STORY ID CALLBACK");
-      void dispatch(setStoryId(storyId));
+      void dispatch(setStoryId(storyIdInDropdown));
       setStoryTitle(
-        storiesList.find((story) => story.id === storyId)?.label ?? ""
+        storiesList.find((story) => story.id === storyIdInDropdown)?.label ?? ""
       );
     },
-    [dispatch, storiesList]
+    [dispatch, storiesList, storyId]
   );
-  // useEffect(() => {
-  //   if (storyId != null) updateStoryId(storyId);
-  //   if (storyId === null) {
-  //     updateStoryId(1);
-  //   }
-  // }, [storyId, dispatch, storiesList, updateStoryId]);
 
   const actionHandlers = {
     loadOnceUponATime,
@@ -167,9 +162,6 @@ const useReplies = (): useRepliesResponse => {
     }
   }, [allReplies, scrollIntoView]);
   const dropdownChange = (value: { id: number; label: string }) => {
-    console.log("VALLUE", value);
-    console.log("Dropdown Change", value);
-    console.log("Dropdown Change ID", value.id);
     updateStoryId(value.id);
   };
   return {

@@ -11,8 +11,14 @@ from app.storyteller.ai_replies import AiReplies
 from app.utils.loggers import story_logger as log
 
 settings = get_settings()
-ai_replies = AiReplies(settings.story.available_llms, 2)
 
+
+if settings.app.environment == "development":
+    story_to_tell = 2
+else:
+    story_to_tell = 1
+
+ai_replies = AiReplies(settings.story.available_llms, story_to_tell)
 
 
 async def job_function() -> None:
