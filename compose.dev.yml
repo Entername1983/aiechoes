@@ -1,7 +1,7 @@
 services:
   nginx:
     image: nginx:latest
-    container_name: nginx_proxy
+    container_name: st_nginx
     ports:
       - "80:80" # Expose HTTP traffic
     volumes:
@@ -12,9 +12,10 @@ services:
       - frontend
       - backend
       - minio
-      - postgres_ai_echoes
+      - postgres
 
   backend:
+    container_name: st_backend
     build:
       context: ./back
       dockerfile: Dockerfile.dev
@@ -35,9 +36,10 @@ services:
       - internal-network
     depends_on:
       - redis
-      - postgres_ai_echoes
+      - postgres
 
   storyteller:
+    container_name: st_storyteller
     volumes:
       - ./back:/code
     build:
@@ -50,9 +52,10 @@ services:
       - internal-network
     depends_on:
       - redis
-      - postgres_ai_echoes
+      - postgres
 
   frontend:
+    container_name: st_frontend
     build:
       context: ./front
       dockerfile: Dockerfile.dev
@@ -69,7 +72,8 @@ services:
     networks:
       - internal-network
 
-  postgres_ai_echoes:
+  postgres:
+    container_name: st_postgres
     image: postgres
     environment:
       POSTGRES_DB: aiechoes_dev
@@ -81,10 +85,26 @@ services:
       - ./postgres-data:/var/lib/postgresql/data
     networks:
       - internal-network
-    ports:
+    ports: #EXTERNAL:INTERNAL
       - "5431:5432"
-
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: st_pgadmin
+    ports:
+      - "5050:8080"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pro.mccarthy@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_LISTEN_PORT: 8080
+      SERVER_MODE: "False"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - internal-network
+    depends_on:
+      - postgres
   redis:
+    container_name: st_redis
     image: redis/redis-stack-server:latest
     # ports:
     #   - "6379:6379"
@@ -99,6 +119,7 @@ services:
     networks:
       - internal-network
   minio:
+    container_name: st_minio
     image: minio/minio:latest
     command: server /data --console-address ":9001"
     ports:
@@ -113,6 +134,8 @@ services:
       - internal-network
 volumes:
   minio_data:
+  postgres_data:
+  pgadmin_data:
 
 networks:
   internal-network:

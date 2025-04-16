@@ -11,7 +11,7 @@ from app.storyteller.ai_replies import AiReplies
 from app.utils.loggers import story_logger as log
 
 settings = get_settings()
-ai_replies = AiReplies(settings.story.available_llms, 2)
+ai_replies = AiReplies(settings.story.available_llms, 1)
 
 
 async def job_function() -> None:

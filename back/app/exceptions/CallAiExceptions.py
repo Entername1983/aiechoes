@@ -33,3 +33,7 @@ class CallAiExceptions:
     class NoImageUrlError(MyBaseError):
         def __init__(self, message: str = "No image URL."):
             super().__init__(message)
+
+    class StoryNotFoundError(MyBaseError):
+        def __init__(self, message: str = "Story not found."):
+            super().__init__(message)

@@ -1,8 +1,9 @@
 from functools import lru_cache
 from typing import Annotated
 
-from app.config.settings import Settings
 from fastapi import Depends
+
+from app.config.settings import Settings
 
 
 @lru_cache

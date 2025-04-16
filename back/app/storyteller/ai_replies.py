@@ -71,6 +71,9 @@ class AiReplies:
         await self.set_new_reply_prompt()
         await self.get_new_reply()
         self.update_batch_info()
+        log.debug("--------------------------CHECKING CHECKING CHECKING ------------")
+        log.debug(self.batch_id)
+        log.debug(self.number_in_batch)
         await self.add_image_to_story()
         await self.update_db_with_new_reply()
         await self.update_context()
@@ -92,6 +95,16 @@ class AiReplies:
             self.story: Stories = await StoriesRepository.retrieve_story_by_id(
                 session, self.story_id
             )
+            if self.story is None:
+                await self.initialize_new_story()
+
+    async def initialize_new_story(self) -> None:
+        log.info("Initializing new story")
+        async with session_factory() as session:
+            new_story = Stories(title="", live=False, story_type="ec")
+            session.add(new_story)
+            await session.commit()
+            self.story = new_story
 
     async def set_new_reply_prompt(self) -> None:
         if self.prev_replies is None:
@@ -101,6 +114,8 @@ class AiReplies:
             await self.create_prompt()
 
     async def retrieve_and_set_context(self) -> None:
+        if not self.story:
+            return
         if self.story.story_type == "wc":  ##with context
             db_context_response = await self.retrieve_current_context()
             if db_context_response is None:
@@ -150,7 +165,8 @@ class AiReplies:
 
     async def create_initial_prompt(self) -> None:
         self.prompt = """You are the first player in a game of exquisite corpse.
-        Please write a sentence to start the story."""
+        Please write a sentence to start the story.  Include only the story sentence,
+        do not include anything else"""
 
     async def select_llm(self) -> None:
         self.current_llm = self.available_llms[self.current_llm_index]
@@ -262,17 +278,19 @@ class AiReplies:
         self.check_if_prompt_is_too_long_and_fix_it()
 
     def update_batch_info(self) -> None:
-        if len(self.prev_replies) > 0 and self.prev_replies[-1] is not None:
-            self.batch_id = (
-                self.prev_replies[-1].batch_id + 1
-                if self.prev_replies[-1].number_in_batch == BATCH_SIZE
-                else self.prev_replies[-1].batch_id
-            )
-            self.number_in_batch = (
-                self.prev_replies[-1].number_in_batch + 1
-                if self.prev_replies[-1].number_in_batch < BATCH_SIZE
-                else 1
-            )
+        log.debug(f"Prev Replies {self.prev_replies}")
+        """If the number of replies with the same batch_id is >= BATCH_SIZE --> increment batch_id
+        and set number_in_batch to 1
+        otherwise increment number in batch
+        """
+        if self.prev_replies and self.prev_replies[-1] is not None:
+            last_reply = self.prev_replies[-1]
+            if last_reply.number_in_batch >= BATCH_SIZE:
+                self.batch_id = last_reply.batch_id + 1
+                self.number_in_batch = 1
+            else:
+                self.batch_id = last_reply.batch_id
+                self.number_in_batch = last_reply.number_in_batch + 1
         else:
             self.batch_id = 1
             self.number_in_batch = 1

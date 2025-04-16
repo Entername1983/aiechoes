@@ -14,10 +14,7 @@ class Images(Base):
     image_url: Mapped[str] = mapped_column(String(255), nullable=False)
     thumbnail_url: Mapped[str] = mapped_column(String(255), nullable=True)
     img_model: Mapped[str] = mapped_column(String(30), nullable=False)
-    time_created: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=lambda: datetime.now(),
-    )
+    time_created: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now())
     story_id: Mapped[int] = mapped_column(ForeignKey("stories.id"), nullable=False)
 
     def to_dict(self) -> dict:
